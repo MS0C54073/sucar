@@ -1,0 +1,183 @@
+import type { User, Booking, Service, Driver } from "./types";
+
+export const mockUsers: User[] = [
+  {
+    userId: "admin-01",
+    name: "Admin User",
+    email: "admin@sucar.com",
+    phone: "111-222-3333",
+    role: "admin",
+    avatarUrl: "https://picsum.photos/seed/avatar-admin/100/100",
+    createdAt: new Date("2023-01-01"),
+  },
+  {
+    userId: "client-01",
+    name: "John Doe",
+    email: "john.doe@email.com",
+    phone: "123-456-7890",
+    role: "client",
+    avatarUrl: "https://picsum.photos/seed/avatar1/100/100",
+    createdAt: new Date("2023-02-15"),
+  },
+  {
+    userId: "driver-01",
+    name: "Mike Wheeler",
+    email: "mike.w@email.com",
+    phone: "098-765-4321",
+    role: "driver",
+    avatarUrl: "https://picsum.photos/seed/avatar2/100/100",
+    createdAt: new Date("2023-03-20"),
+  },
+  {
+    userId: "provider-01",
+    name: "Sparkle Car Wash",
+    email: "contact@sparkle.com",
+    phone: "555-555-5555",
+    role: "provider",
+    avatarUrl: "https://picsum.photos/seed/avatar-provider/100/100",
+    createdAt: new Date("2023-01-10"),
+  },
+  {
+    userId: "client-02",
+    name: "Jane Smith",
+    email: "jane.smith@email.com",
+    phone: "123-456-7891",
+    role: "client",
+    avatarUrl: "https://picsum.photos/seed/avatar3/100/100",
+    createdAt: new Date("2023-04-01"),
+  },
+];
+
+export const mockServices: Service[] = [
+  {
+    id: "service-01",
+    name: "Exterior Wash",
+    description: "A thorough wash of the car's exterior.",
+    price: 15.0,
+    durationMinutes: 20,
+  },
+  {
+    id: "service-02",
+    name: "Interior Clean",
+    description: "Vacuuming and cleaning of the car's interior.",
+    price: 25.0,
+    durationMinutes: 30,
+  },
+  {
+    id: "service-03",
+    name: "Full Service",
+    description: "Complete exterior wash and interior cleaning.",
+    price: 35.0,
+    durationMinutes: 45,
+  },
+  {
+    id: "service-04",
+    name: "Wax & Polish",
+    description: "Adds a protective wax layer and polish.",
+    price: 40.0,
+    durationMinutes: 60,
+  },
+];
+
+export const mockBookings: Booking[] = [
+  {
+    bookingId: "booking-01",
+    clientId: "client-01",
+    clientName: "John Doe",
+    driverId: "driver-01",
+    driverName: "Mike Wheeler",
+    providerId: "provider-01",
+    providerName: "Sparkle Car Wash",
+    pickupLocation: "123 Main St, Anytown, USA",
+    carDetails: {
+      make: "Toyota",
+      model: "Camry",
+      year: 2021,
+      color: "Silver",
+      plate: "ABC-123",
+    },
+    service: mockServices[2],
+    status: "delivered",
+    timestamps: {
+      createdAt: new Date("2024-05-20T10:00:00Z"),
+      updatedAt: new Date("2024-05-20T12:30:00Z"),
+      deliveryAt: new Date("2024-05-20T12:30:00Z"),
+    },
+    cost: 35.0,
+  },
+  {
+    bookingId: "booking-02",
+    clientId: "client-02",
+    clientName: "Jane Smith",
+    driverId: "driver-01",
+    driverName: "Mike Wheeler",
+    providerId: "provider-01",
+    providerName: "Sparkle Car Wash",
+    pickupLocation: "456 Oak Ave, Anytown, USA",
+    carDetails: {
+      make: "Honda",
+      model: "Civic",
+      year: 2022,
+      color: "Blue",
+      plate: "XYZ-789",
+    },
+    service: mockServices[0],
+    status: "in_wash",
+    timestamps: {
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    cost: 15.0,
+  },
+  {
+    bookingId: "booking-03",
+    clientId: "client-01",
+    clientName: "John Doe",
+    providerId: "provider-01",
+    providerName: "Sparkle Car Wash",
+    pickupLocation: "789 Pine Ln, Anytown, USA",
+    carDetails: {
+      make: "Ford",
+      model: "F-150",
+      year: 2020,
+      color: "Red",
+      plate: "TRK-456",
+    },
+    service: mockServices[3],
+    status: "requested",
+    timestamps: {
+      createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
+      updatedAt: new Date(Date.now() - 1000 * 60 * 30),
+    },
+    cost: 40.0,
+  },
+];
+
+export const mockDrivers: (Omit<Driver, "documents"> & { userId: string, name: string, email: string, phone: string, avatarUrl: string })[] = [
+    {
+        driverId: "driver-01",
+        userId: "driver-01",
+        name: "Mike Wheeler",
+        email: "mike.w@email.com",
+        phone: "098-765-4321",
+        avatarUrl: "https://picsum.photos/seed/avatar2/100/100",
+        licenseNo: "D12345678",
+        licenseExpiry: new Date("2028-12-31"),
+        address: "101 Driver's Way",
+        maritalStatus: "single",
+        availability: true,
+    },
+    {
+        driverId: "driver-02",
+        userId: "driver-02",
+        name: "Nancy Drew",
+        email: "nancy.d@email.com",
+        phone: "098-765-4322",
+        avatarUrl: "https://picsum.photos/seed/avatar4/100/100",
+        licenseNo: "D87654321",
+        licenseExpiry: new Date("2026-06-30"),
+        address: "202 Detective Lane",
+        maritalStatus: "married",
+        availability: false,
+    }
+]

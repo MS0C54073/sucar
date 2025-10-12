@@ -1,3 +1,46 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero",
+      "description": "A shiny clean car in a modern setting",
+      "imageUrl": "https://picsum.photos/seed/sucar-hero/1920/1080",
+      "imageHint": "clean car"
+    },
+    {
+      "id": "feature-booking",
+      "description": "A person booking a service on a smartphone",
+      "imageUrl": "https://picsum.photos/seed/sucar-booking/600/400",
+      "imageHint": "phone booking"
+    },
+    {
+      "id": "feature-tracking",
+      "description": "A map showing a car's route",
+      "imageUrl": "https://picsum.photos/seed/sucar-tracking/600/400",
+      "imageHint": "map route"
+    },
+    {
+      "id": "feature-payment",
+      "description": "Secure online payment process",
+      "imageUrl": "https://picsum.photos/seed/sucar-payment/600/400",
+      "imageHint": "online payment"
+    },
+    {
+      "id": "avatar-1",
+      "description": "User avatar",
+      "imageUrl": "https://picsum.photos/seed/avatar1/100/100",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "avatar-2",
+      "description": "User avatar",
+      "imageUrl": "https://picsum.photos/seed/avatar2/100/100",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "avatar-3",
+      "description": "User avatar",
+      "imageUrl": "https://picsum.photos/seed/avatar3/100/100",
+      "imageHint": "woman portrait"
+    }
+  ]
 }
