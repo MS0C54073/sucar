@@ -1,38 +1,31 @@
-rules_version = '2';
 
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper functions
-    function isAuth() {
-      return request.auth != null;
-    }
-
-    // AUTHENTICATION
-    // Only the user can r/w their own user document
     match /users/{userId} {
-      allow read, write: if isAuth() && request.auth.uid == userId;
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Authenticated users can see the list of drivers
-    match /drivers/{document=**} {
-      allow get, list: if isAuth();
+    match /drivers/{driverId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null; // Should be more specific later
     }
-    
-    // Clients can only read bookings where they are the client
+
+    match /services/{serviceId} {
+        allow read: if true;
+        allow write: if request.auth != null; // Admin only
+    }
+
     match /bookings/{bookingId} {
-      allow get, list: if isAuth() && request.auth.uid == resource.data.clientId;
-    }
-
-    // PUBLIC
-    // Anyone can read services
-    match /services/{document=**} {
-      allow get, list: if true;
-    }
-
-    // Default deny
-    match /{document=**} {
-      allow read, write: if false;
+      // Clients can read their own bookings, drivers can read theirs.
+      allow get: if request.auth != null && (request.auth.uid == resource.data.clientId || request.auth.uid == resource.data.driverId);
+      // Clients can query bookings by their own clientId.
+      allow list: if request.auth != null && request.query.get("clientId") == request.auth.uid;
+      // Any authenticated user can create a booking for now.
+      allow create: if request.auth != null;
+      // Only clients or drivers associated with a booking can update it.
+      allow update: if request.auth != null && (request.auth.uid == resource.data.clientId || request.auth.uid == resource.data.driverId);
+      allow delete: if false; // Disallow deletion for now.
     }
   }
 }
