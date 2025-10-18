@@ -3,37 +3,34 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Users can only read and write to their own user document
+    // Helper functions
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // AUTHENTICATION
+    // Only the user can r/w their own user document
     match /users/{userId} {
-      allow read, update, delete: if request.auth.uid == userId;
-      allow create: if request.auth.uid != null;
+      allow read, write: if isAuth() && request.auth.uid == userId;
     }
 
-    // Any authenticated user can read the list of drivers
-    match /drivers/{driverId} {
-      allow read: if request.auth != null;
-      // Write access should be restricted, e.g., to admins or the drivers themselves
-      allow write: if false; // Placeholder, adjust as needed
+    // Authenticated users can see the list of drivers
+    match /drivers/{document=**} {
+      allow get, list: if isAuth();
     }
     
-    // Services can be read by anyone, but only written to by providers/admins
-    match /services/{serviceId} {
-      allow read: if request.auth != null;
-      allow write: if false; // Placeholder
-    }
-
-    // Bookings have more complex rules
+    // Clients can only read bookings where they are the client
     match /bookings/{bookingId} {
-      // Allow read if user is the client or driver associated with the booking
-      allow read: if request.auth.uid == resource.data.clientId || request.auth.uid == resource.data.driverId;
-      // Allow client to create a booking for themselves
-      allow create: if request.auth.uid == request.resource.data.clientId;
-      // Allow client/driver/admin to update status
-      allow update: if request.auth.uid == resource.data.clientId || request.auth.uid == resource.data.driverId;
-      // More specific rules needed here for a real app
+      allow get, list: if isAuth() && request.auth.uid == resource.data.clientId;
     }
-    
-    // By default, disallow all other access
+
+    // PUBLIC
+    // Anyone can read services
+    match /services/{document=**} {
+      allow get, list: if true;
+    }
+
+    // Default deny
     match /{document=**} {
       allow read, write: if false;
     }
