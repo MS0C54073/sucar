@@ -21,7 +21,7 @@ import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email({ message: "Invalid email address." }),
+  email: z.string().email({ message: "A valid email address is required." }),
   password: z
     .string()
     .min(6, { message: "Password must be at least 6 characters." }),
@@ -45,6 +45,11 @@ export function SignUpForm() {
     setIsLoading(true);
     try {
       await signup(values.name, values.email, values.password, "client");
+       toast({
+        title: "Verification Email Sent",
+        description: "Please check your inbox to verify your email address and complete registration.",
+      });
+      // The auth provider will redirect to the dashboard automatically
     } catch (error: any) {
       toast({
         variant: "destructive",

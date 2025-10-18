@@ -23,6 +23,7 @@ import {
   onAuthStateChanged,
   signOut,
   User as FirebaseUser,
+  sendEmailVerification,
 } from "firebase/auth";
 
 interface AuthContextType {
@@ -114,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error("Login failed:", error);
-      // Handle login errors (e.g., show a toast message)
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -135,6 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
       const fbUser = userCredential.user;
 
+      await sendEmailVerification(fbUser);
+
       const newUser: User = {
         userId: fbUser.uid,
         name,
@@ -151,10 +154,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       setUser(newUser);
-      router.push("/dashboard");
+      router.push("/login");
     } catch (error) {
       console.error("Signup failed:", error);
-      // Handle signup errors
+      throw error;
     } finally {
       setLoading(false);
     }
