@@ -84,7 +84,7 @@ export function BookingStatus() {
 
   if (!activeBooking) {
     return (
-      <Card className="flex items-center justify-center h-full">
+      <Card className="flex items-center justify-center h-full min-h-[200px]">
         <CardContent className="text-center pt-6">
           <Car className="mx-auto h-12 w-12 text-muted-foreground" />
           <p className="mt-4 text-muted-foreground">

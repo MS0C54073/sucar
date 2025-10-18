@@ -31,8 +31,13 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { mockServices } from "@/lib/placeholder-data";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Car, Send } from "lucide-react";
 
 const formSchema = z.object({
+  bookingType: z.enum(["self-drive", "request-driver"], {
+    required_error: "You need to select a booking type.",
+  }),
   car: z.string().min(1, { message: "Please select a car." }),
   service: z.string().min(1, { message: "Please select a service." }),
   pickupLocation: z
@@ -44,6 +49,7 @@ export function BookingForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      bookingType: "request-driver",
       car: "ABC-123",
       service: "",
       pickupLocation: "",
@@ -70,6 +76,42 @@ export function BookingForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            <FormField
+              control={form.control}
+              name="bookingType"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>How do you want to get your car washed?</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="grid grid-cols-2 gap-4"
+                    >
+                      <FormItem>
+                        <FormControl>
+                           <RadioGroupItem value="self-drive" id="self-drive" className="sr-only" />
+                        </FormControl>
+                        <Label htmlFor="self-drive" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
+                            <Car className="mb-3 h-6 w-6" />
+                            Self-Drive
+                        </Label>
+                      </FormItem>
+                       <FormItem>
+                        <FormControl>
+                           <RadioGroupItem value="request-driver" id="request-driver" className="sr-only" />
+                        </FormControl>
+                         <Label htmlFor="request-driver" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
+                           <Send className="mb-3 h-6 w-6" />
+                            Request Driver
+                        </Label>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="car"
@@ -135,7 +177,7 @@ export function BookingForm() {
                     <Input placeholder="e.g., 123 Main St, Anytown" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Where should we pick up your car?
+                    This is your current location.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

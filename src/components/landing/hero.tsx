@@ -21,11 +21,10 @@ export function Hero() {
       <div className="container relative mx-auto px-4 md:px-6 text-center text-white">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-4xl font-headline font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-            The Ultimate Car Care Convenience
+            Request a Pick-Up or Book a Car Wash
           </h1>
           <p className="mt-6 text-lg md:text-xl text-primary-foreground/90">
-            Schedule a car wash pickup from anywhere. We fetch, clean, and
-            return your car, sparkling like new.
+            Choose between Self-Drive or Request a Driver. We'll find available options near you.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
