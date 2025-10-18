@@ -10,10 +10,10 @@ export function Hero() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid lg:grid-cols-2 gap-8 items-center min-h-[60vh] py-20">
           <div className="text-white text-center lg:text-left">
-            <h1 className="text-4xl font-headline font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl [text-shadow:2px_2px_4px_rgba(0,0,0,0.5)]">
+            <h1 className="text-4xl font-headline font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-white [text-shadow:2px_2px_8px_rgba(0,0,0,0.8)]">
               Request a Pick-Up or Book a Car Wash
             </h1>
-            <p className="mt-6 text-lg md:text-xl text-white [text-shadow:1px_1px_3px_rgba(0,0,0,0.7)]">
+            <p className="mt-6 text-lg md:text-xl text-white [text-shadow:1px_1px_4px_rgba(0,0,0,0.9)]">
               Choose between Self-Drive or Request a Driver. We'll find available options near you.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">

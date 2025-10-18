@@ -9,7 +9,7 @@ export interface User {
   phone: string;
   role: UserRole;
   avatarUrl?: string;
-  createdAt: Date | Timestamp;
+  createdAt: Date;
 }
 
 export interface Car {
@@ -35,7 +35,7 @@ export interface Driver {
   userId: string;
   name: string;
   licenseNo: string;
-  licenseExpiry: Date | Timestamp;
+  licenseExpiry: Date;
   address: string;
   maritalStatus: MaritalStatus;
   availability: boolean;
@@ -87,10 +87,10 @@ export interface Booking {
   service: Service;
   status: BookingStatus;
   timestamps: {
-    createdAt: Date | Timestamp;
-    updatedAt: Date | Timestamp;
-    pickupAt?: Date | Timestamp;
-    deliveryAt?: Date | Timestamp;
+    createdAt: Date;
+    updatedAt: Date;
+    pickupAt?: Date;
+    deliveryAt?: Date;
   };
   cost: number;
 }
@@ -104,5 +104,5 @@ export interface Payment {
   amount: number;
   method: PaymentMethod;
   status: PaymentStatus;
-  createdAt: Date | Timestamp;
+  createdAt: Date;
 }

@@ -32,9 +32,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Car, Send } from "lucide-react";
-import { useCollection, useFirebase, addDocumentNonBlocking, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
-import type { Service } from "@/lib/types";
+import { MOCK_SERVICES } from "@/lib/mock-data";
 import { Label } from "@/components/ui/label";
 
 const formSchema = z.object({
@@ -49,10 +47,6 @@ const formSchema = z.object({
 });
 
 export function BookingForm() {
-  const { firestore } = useFirebase();
-  const servicesCollection = useMemoFirebase(() => collection(firestore, "services"), [firestore]);
-  const { data: services } = useCollection<Service>(servicesCollection);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,7 +57,7 @@ export function BookingForm() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
     // This is where you would create a new booking document in Firestore.
     // For now, we just show a toast.
@@ -180,7 +174,7 @@ export function BookingForm() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {services?.map((service) => (
+                      {MOCK_SERVICES.map((service) => (
                         <SelectItem key={service.id} value={service.id}>
                           {service.name} - ${service.price.toFixed(2)}
                         </SelectItem>

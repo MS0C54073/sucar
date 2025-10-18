@@ -12,50 +12,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/auth-provider";
 import { Separator } from "@/components/ui/separator";
-import { Car, MapPin, Wrench, Loader2 } from "lucide-react";
-import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
-import { collection, query, where } from "firebase/firestore";
-import type { Booking } from "@/lib/types";
+import { Car, MapPin, Wrench } from "lucide-react";
+import { MOCK_BOOKINGS } from "@/lib/mock-data";
 
 export function ActiveTrips() {
   const { user } = useAuth();
-  const { firestore } = useFirebase();
-
-  const driverBookingsQuery = useMemoFirebase(() => {
-    if (!user) return null;
-    return query(
-      collection(firestore, "bookings"),
-      where("driverId", "==", user.userId),
-      where("status", "not-in", ["delivered", "cancelled"])
-    );
-  }, [user, firestore]);
-
-  const {
-    data: driverBookings,
-    isLoading,
-    error,
-  } = useCollection<Booking>(driverBookingsQuery);
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-       <Card className="text-center py-12 bg-destructive/10 border-destructive">
-        <CardContent>
-          <h3 className="text-xl font-semibold text-destructive">Error Loading Trips</h3>
-          <p className="text-destructive/80 mt-2">
-            Could not fetch your active trips. Please check your connection or try again later.
-          </p>
-        </CardContent>
-      </Card>
-    )
-  }
+  const driverBookings = MOCK_BOOKINGS.filter(
+    (b) =>
+      b.driverId === user?.userId &&
+      b.status !== "delivered" &&
+      b.status !== "cancelled"
+  );
 
   if (!driverBookings || driverBookings.length === 0) {
     return (

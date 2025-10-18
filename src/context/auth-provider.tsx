@@ -8,176 +8,63 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { useFirebase } from "@/firebase";
-import {
-  doc,
-  setDoc,
-  getDoc,
-  DocumentReference,
-  serverTimestamp,
-} from "firebase/firestore";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut,
-  User as FirebaseUser,
-  sendEmailVerification,
-} from "firebase/auth";
+import { useRouter } from "next/navigation";
+import { MOCK_USERS, MOCK_CLIENTS, MOCK_DRIVERS, MOCK_PROVIDERS } from "@/lib/mock-data";
 
+// This interface is simplified for the mock provider
 interface AuthContextType {
   user: User | null;
-  firebaseUser: FirebaseUser | null;
   role: UserRole | null;
   login: (role: UserRole, email?: string, password?: string) => Promise<void>;
-  signup: (
-    name: string,
-    email: string,
-    password: string,
-    role: UserRole
-  ) => Promise<void>;
+  signup: (name: string, email: string, password: string, role: UserRole) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const DUMMY_USER_DATA: Omit<User, "userId" | "email" | "role" | "createdAt"> = {
-  name: "Dummy User",
-  phone: "000-000-0000",
-  avatarUrl: "https://picsum.photos/seed/avatar-dummy/100/100",
-};
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const pathname = usePathname();
-  const { auth, firestore } = useFirebase();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      setFirebaseUser(fbUser);
-      if (fbUser) {
-        const userDocRef = doc(
-          firestore,
-          "users",
-          fbUser.uid
-        ) as DocumentReference<User>;
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setUser(userData);
-        } else {
-          // If user exists in auth but not in firestore, maybe it's a new user
-          // Or this is a state that needs handling, for now, we logout
-           setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [auth, firestore]);
-  
-  useEffect(() => {
-    if (!loading) {
-      const isAuthPage = pathname === "/login" || pathname === "/signup";
-      if (!user && !isAuthPage && pathname !== "/") {
-        router.push("/login");
-      }
-    }
-  }, [user, loading, pathname, router]);
-
+  // Mock login function
   const login = async (role: UserRole, email?: string, password?: string) => {
     setLoading(true);
-    try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email || `${role}@sucar.com`,
-        password || "password"
-      );
-      const fbUser = userCredential.user;
-
-      const userDocRef = doc(firestore, "users", fbUser.uid) as DocumentReference<User>;
-      const userDoc = await getDoc(userDocRef);
-
-      if (userDoc.exists() && userDoc.data().role === role) {
-        setUser(userDoc.data());
-        router.push("/dashboard");
-      } else {
-        await signOut(auth);
-        throw new Error("Role mismatch or user document not found.");
-      }
-    } catch (error) {
-      console.error("Login failed:", error);
-      throw error;
-    } finally {
+    // Find a mock user with the specified role
+    const mockUser = MOCK_USERS.find((u) => u.role === role);
+    if (mockUser) {
+      setUser(mockUser);
+      router.push("/dashboard");
+    } else {
       setLoading(false);
+      throw new Error(`No mock user found for role: ${role}`);
     }
+    setLoading(false);
   };
 
-  const signup = async (
-    name: string,
-    email: string,
-    password: string,
-    role: UserRole = "client"
-  ) => {
+  // Mock signup function
+  const signup = async (name: string, email: string, password: string, role: UserRole) => {
     setLoading(true);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const fbUser = userCredential.user;
-
-      await sendEmailVerification(fbUser);
-
-      const newUser: User = {
-        userId: fbUser.uid,
-        name,
-        email,
-        phone: DUMMY_USER_DATA.phone,
-        role,
-        avatarUrl: `https://picsum.photos/seed/${fbUser.uid}/100/100`,
-        createdAt: new Date(),
-      };
-
-      await setDoc(doc(firestore, "users", fbUser.uid), {
-        ...newUser,
-        createdAt: serverTimestamp(),
-      });
-      
-      setUser(newUser);
-      router.push("/login");
-    } catch (error) {
-      console.error("Signup failed:", error);
-      throw error;
-    } finally {
+    console.log("Signing up user:", { name, email, role });
+    // In a real app, you'd create a user. Here we just log in as a client.
+    const mockUser = MOCK_USERS.find((u) => u.role === 'client');
+     if (mockUser) {
+      setUser(mockUser);
+      router.push("/dashboard");
+    } else {
       setLoading(false);
+      throw new Error("No mock client user found for signup.");
     }
+    setLoading(false);
   };
 
-  const logout = async () => {
-    setLoading(true);
-    try {
-      await signOut(auth);
-      setUser(null);
-      setFirebaseUser(null);
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      setLoading(false);
-    }
+  const logout = () => {
+    setUser(null);
+    router.push("/login");
   };
 
-  const value = { user, firebaseUser, role: user?.role || null, login, signup, logout, loading };
+  const value = { user, role: user?.role || null, login, signup, logout, loading };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

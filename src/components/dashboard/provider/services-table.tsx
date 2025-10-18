@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Loader2 } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,18 +22,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
-import type { Service } from "@/lib/types";
+import { MOCK_SERVICES } from "@/lib/mock-data";
 
 export function ServicesTable() {
-  const { firestore } = useFirebase();
-  const servicesCollection = useMemoFirebase(
-    () => collection(firestore, "services"),
-    [firestore]
-  );
-  const { data: services, isLoading } = useCollection<Service>(servicesCollection);
-
   return (
     <Card>
       <CardHeader>
@@ -53,14 +44,7 @@ export function ServicesTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading && (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center">
-                  <Loader2 className="h-6 w-6 animate-spin inline-block" />
-                </TableCell>
-              </TableRow>
-            )}
-            {services?.map((service) => (
+            {MOCK_SERVICES.map((service) => (
               <TableRow key={service.id}>
                 <TableCell className="font-medium">{service.name}</TableCell>
                 <TableCell>{service.description}</TableCell>

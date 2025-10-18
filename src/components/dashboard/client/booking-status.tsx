@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -21,8 +21,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { BookingStatus, Booking } from "@/lib/types";
-import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
-import { collection, query, where, limit } from "firebase/firestore";
+import { MOCK_BOOKINGS } from "@/lib/mock-data";
+
 
 const allStatuses: BookingStatus[] = [
   "requested",
@@ -55,34 +55,24 @@ const statusText: Record<BookingStatus, string> = {
 
 export function BookingStatus() {
   const { user } = useAuth();
-  const { firestore } = useFirebase();
-
-  const bookingsQuery = useMemoFirebase(() => {
-    if (!user) return null;
-    return query(
-      collection(firestore, "bookings"),
-      where("clientId", "==", user.userId),
-      where("status", "not-in", ["delivered", "cancelled"]),
-      limit(1)
-    );
-  }, [user, firestore]);
-
-  const { data: bookings, isLoading } = useCollection<Booking>(bookingsQuery);
-  const activeBooking = bookings?.[0];
-
+  
+  // Find an active booking for the current mock user
+  const activeBooking = MOCK_BOOKINGS.find(
+    (b) =>
+      b.clientId === user?.userId &&
+      b.status !== "delivered" &&
+      b.status !== "cancelled"
+  );
+  
   const [currentStatus, setCurrentStatus] = useState<
     BookingStatus | undefined
   >(activeBooking?.status);
 
-  useEffect(() => {
-    if (activeBooking) {
-      setCurrentStatus(activeBooking.status);
-    }
-  }, [activeBooking]);
-
   // This effect is for demo purposes to simulate status progression
   useEffect(() => {
-    if (!activeBooking || activeBooking.status === 'delivered' || activeBooking.status === 'cancelled') return;
+    if (!activeBooking) return;
+    
+    setCurrentStatus(activeBooking.status);
 
     const statusIndex = allStatuses.indexOf(activeBooking.status);
     if (statusIndex < 0 || statusIndex === allStatuses.length - 1) return;
@@ -93,8 +83,6 @@ export function BookingStatus() {
         const currentIndex = allStatuses.indexOf(prevStatus);
         const nextIndex = currentIndex + 1;
         if (nextIndex < allStatuses.length) {
-          // In a real app, this would be a Firestore update
-          // For now, we just update the local state
           return allStatuses[nextIndex];
         }
         clearInterval(interval);
@@ -105,20 +93,6 @@ export function BookingStatus() {
     return () => clearInterval(interval);
   }, [activeBooking]);
 
-
-  if (isLoading) {
-    return (
-      <Card className="flex items-center justify-center h-full min-h-[200px]">
-        <CardContent className="text-center pt-6">
-          <Loader className="mx-auto h-12 w-12 text-muted-foreground animate-spin" />
-          <p className="mt-4 text-muted-foreground">
-            Loading your active booking...
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-  
   if (!activeBooking) {
     return (
       <Card className="flex items-center justify-center h-full min-h-[200px]">

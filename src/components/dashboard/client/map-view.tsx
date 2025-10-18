@@ -11,9 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import React from "react";
-import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
-import { collection, query, where } from "firebase/firestore";
-import type { Driver } from "@/lib/types";
+import { MOCK_DRIVERS, MOCK_USERS } from "@/lib/mock-data";
 
 // Function to generate random positions for drivers on the map
 const getRandomPosition = () => ({
@@ -22,15 +20,8 @@ const getRandomPosition = () => ({
 });
 
 export function MapView() {
-  const { firestore } = useFirebase();
-  const driversQuery = useMemoFirebase(
-    () => query(collection(firestore, "drivers")),
-    [firestore]
-  );
-  const { data: drivers, isLoading } = useCollection<Driver>(driversQuery);
-
   const [driverPositions] = React.useState(
-    Array(10)
+    Array(MOCK_DRIVERS.length)
       .fill(0)
       .map(getRandomPosition)
   );
@@ -47,28 +38,30 @@ export function MapView() {
       <div className="absolute inset-0 bg-black/10" />
 
       <TooltipProvider>
-        {drivers?.map((driver, index) => (
-          <Tooltip key={driver.id}>
-            <TooltipTrigger asChild>
-              <div
-                className={cn(
-                  "absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500",
-                  driver.availability
-                    ? "text-primary"
-                    : "text-muted-foreground"
-                )}
-                style={driverPositions[index % driverPositions.length]}
-              >
-                <MapPin className="h-8 w-8 drop-shadow-lg" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              {/* In a real app, you'd fetch the user's name from the 'users' collection via their userId */}
-              <p className="font-bold">Driver #{driver.id.slice(-4)}</p>
-              <p>{driver.availability ? "Available" : "Unavailable"}</p>
-            </TooltipContent>
-          </Tooltip>
-        ))}
+        {MOCK_DRIVERS.map((driver, index) => {
+          const user = MOCK_USERS.find(u => u.userId === driver.userId);
+          return (
+            <Tooltip key={driver.id}>
+              <TooltipTrigger asChild>
+                <div
+                  className={cn(
+                    "absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500",
+                    driver.availability
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  )}
+                  style={driverPositions[index]}
+                >
+                  <MapPin className="h-8 w-8 drop-shadow-lg" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="font-bold">{user?.name || `Driver #${driver.id.slice(-4)}`}</p>
+                <p>{driver.availability ? "Available" : "Unavailable"}</p>
+              </TooltipContent>
+            </Tooltip>
+          )
+        })}
       </TooltipProvider>
 
       {/* User's location pin */}
