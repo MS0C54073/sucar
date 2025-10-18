@@ -17,13 +17,13 @@ export function Hero() {
           data-ai-hint="clean car"
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20" />
       <div className="container relative mx-auto px-4 md:px-6 text-center text-white">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl font-headline font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+          <h1 className="text-4xl font-headline font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl [text-shadow:2px_2px_4px_rgba(0,0,0,0.5)]">
             Request a Pick-Up or Book a Car Wash
           </h1>
-          <p className="mt-6 text-lg md:text-xl text-primary-foreground/90">
+          <p className="mt-6 text-lg md:text-xl text-primary-foreground/90 [text-shadow:1px_1px_2px_rgba(0,0,0,0.5)]">
             Choose between Self-Drive or Request a Driver. We'll find available options near you.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
