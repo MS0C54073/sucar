@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +18,8 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-provider";
 import { Separator } from "@/components/ui/separator";
 import type { UserRole } from "@/lib/types";
-import { Car, Shield, Wrench, UserCog } from "lucide-react";
+import { Car, Shield, Wrench, UserCog, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -26,6 +28,9 @@ const formSchema = z.object({
 
 export function LoginForm() {
   const { login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [roleLoading, setRoleLoading] = useState<UserRole | null>(null);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -35,29 +40,70 @@ export function LoginForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // In a real app, you'd call a Firebase auth method here.
-    // For now, we'll default to client login on form submit.
-    console.log(values);
-    login("client");
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+    try {
+      // Assuming a default role of 'client' for email/password login
+      // You might want a role selection dropdown for this form too.
+      await login("client", values.email, values.password);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message || "An unexpected error occurred.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
-  const handleRoleLogin = (role: UserRole) => {
-    login(role);
+  const handleRoleLogin = async (role: UserRole) => {
+    setRoleLoading(role);
+    try {
+      await login(role);
+    } catch (error: any) {
+       toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: `Could not log in as ${role}. Ensure a test account exists.`,
+      });
+    } finally {
+      setRoleLoading(null);
+    }
   };
 
   return (
     <div>
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <Button variant="outline" onClick={() => handleRoleLogin("admin")}><UserCog className="mr-2"/> Admin</Button>
-        <Button variant="outline" onClick={() => handleRoleLogin("client")}><Car className="mr-2"/> Client</Button>
-        <Button variant="outline" onClick={() => handleRoleLogin("driver")}><Shield className="mr-2"/> Driver</Button>
-        <Button variant="outline" onClick={() => handleRoleLogin("provider")}><Wrench className="mr-2"/> Provider</Button>
+        {(["admin", "client", "driver", "provider"] as UserRole[]).map(
+          (role) => (
+            <Button
+              key={role}
+              variant="outline"
+              onClick={() => handleRoleLogin(role)}
+              disabled={!!roleLoading}
+            >
+              {roleLoading === role ? (
+                <Loader2 className="mr-2 animate-spin" />
+              ) : (
+                <>
+                  {role === "admin" && <UserCog className="mr-2" />}
+                  {role === "client" && <Car className="mr-2" />}
+                  {role === "driver" && <Shield className="mr-2" />}
+                  {role === "provider" && <Wrench className="mr-2" />}
+                </>
+              )}
+              {role.charAt(0).toUpperCase() + role.slice(1)}
+            </Button>
+          )
+        )}
       </div>
 
       <div className="relative mb-6">
         <Separator />
-        <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-card px-2 text-xs text-muted-foreground">OR</span>
+        <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-card px-2 text-xs text-muted-foreground">
+          OR
+        </span>
       </div>
 
       <Form {...form}>
@@ -88,8 +134,9 @@ export function LoginForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
-            Login
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Login as Client
           </Button>
         </form>
       </Form>

@@ -1,3 +1,5 @@
+import type { Timestamp } from "firebase/firestore";
+
 export type UserRole = "admin" | "driver" | "client" | "provider";
 
 export interface User {
@@ -7,7 +9,7 @@ export interface User {
   phone: string;
   role: UserRole;
   avatarUrl?: string;
-  createdAt: Date;
+  createdAt: Date | Timestamp;
 }
 
 export interface Car {
@@ -28,10 +30,12 @@ export interface Client {
 export type MaritalStatus = "single" | "married" | "divorced" | "widowed";
 
 export interface Driver {
+  id: string;
   driverId: string;
   userId: string;
+  name: string;
   licenseNo: string;
-  licenseExpiry: Date;
+  licenseExpiry: Date | Timestamp;
   address: string;
   maritalStatus: MaritalStatus;
   availability: boolean;
@@ -70,6 +74,7 @@ export type BookingStatus =
   | "cancelled";
 
 export interface Booking {
+  id: string;
   bookingId: string;
   clientId: string;
   clientName: string;
@@ -82,10 +87,10 @@ export interface Booking {
   service: Service;
   status: BookingStatus;
   timestamps: {
-    createdAt: Date;
-    updatedAt: Date;
-    pickupAt?: Date;
-    deliveryAt?: Date;
+    createdAt: Date | Timestamp;
+    updatedAt: Date | Timestamp;
+    pickupAt?: Date | Timestamp;
+    deliveryAt?: Date | Timestamp;
   };
   cost: number;
 }
@@ -99,5 +104,5 @@ export interface Payment {
   amount: number;
   method: PaymentMethod;
   status: PaymentStatus;
-  createdAt: Date;
+  createdAt: Date | Timestamp;
 }

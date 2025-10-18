@@ -30,9 +30,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { mockServices } from "@/lib/placeholder-data";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Car, Send } from "lucide-react";
+import { useCollection, useFirebase, addDocumentNonBlocking, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
+import type { Service } from "@/lib/types";
+import { Label } from "@/components/ui/label";
 
 const formSchema = z.object({
   bookingType: z.enum(["self-drive", "request-driver"], {
@@ -46,18 +49,24 @@ const formSchema = z.object({
 });
 
 export function BookingForm() {
+  const { firestore } = useFirebase();
+  const servicesCollection = useMemoFirebase(() => collection(firestore, "services"), [firestore]);
+  const { data: services } = useCollection<Service>(servicesCollection);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       bookingType: "request-driver",
-      car: "ABC-123",
+      car: "ABC-123", // This should be dynamic based on user's cars
       service: "",
       pickupLocation: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+    // This is where you would create a new booking document in Firestore.
+    // For now, we just show a toast.
     toast({
       title: "Booking Requested!",
       description: "We're finding a driver for you.",
@@ -90,20 +99,34 @@ export function BookingForm() {
                     >
                       <FormItem>
                         <FormControl>
-                           <RadioGroupItem value="self-drive" id="self-drive" className="sr-only" />
+                          <RadioGroupItem
+                            value="self-drive"
+                            id="self-drive"
+                            className="sr-only"
+                          />
                         </FormControl>
-                        <Label htmlFor="self-drive" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
-                            <Car className="mb-3 h-6 w-6" />
-                            Self-Drive
+                        <Label
+                          htmlFor="self-drive"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                        >
+                          <Car className="mb-3 h-6 w-6" />
+                          Self-Drive
                         </Label>
                       </FormItem>
-                       <FormItem>
+                      <FormItem>
                         <FormControl>
-                           <RadioGroupItem value="request-driver" id="request-driver" className="sr-only" />
+                          <RadioGroupItem
+                            value="request-driver"
+                            id="request-driver"
+                            className="sr-only"
+                          />
                         </FormControl>
-                         <Label htmlFor="request-driver" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
-                           <Send className="mb-3 h-6 w-6" />
-                            Request Driver
+                        <Label
+                          htmlFor="request-driver"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                        >
+                          <Send className="mb-3 h-6 w-6" />
+                          Request Driver
                         </Label>
                       </FormItem>
                     </RadioGroup>
@@ -128,6 +151,7 @@ export function BookingForm() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      {/* This should be populated from the user's cars in Firestore */}
                       <SelectItem value="ABC-123">
                         2021 Toyota Camry (ABC-123)
                       </SelectItem>
@@ -156,7 +180,7 @@ export function BookingForm() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {mockServices.map((service) => (
+                      {services?.map((service) => (
                         <SelectItem key={service.id} value={service.id}>
                           {service.name} - ${service.price.toFixed(2)}
                         </SelectItem>
@@ -174,7 +198,10 @@ export function BookingForm() {
                 <FormItem>
                   <FormLabel>Pickup Location</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., 123 Main St, Anytown" {...field} />
+                    <Input
+                      placeholder="e.g., 123 Main St, Anytown"
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>
                     This is your current location.
