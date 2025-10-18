@@ -1,0 +1,402 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the SuCAR system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's full name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "The user's phone number."
+        },
+        "role": {
+          "type": "string",
+          "description": "The user's role in the system (admin, driver, client, provider)."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user account was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "phone",
+        "role",
+        "createdAt"
+      ]
+    },
+    "Driver": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Driver",
+      "type": "object",
+      "description": "Represents a driver in the SuCAR system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the driver."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:1 Driver)"
+        },
+        "licenseNo": {
+          "type": "string",
+          "description": "The driver's license number."
+        },
+        "licenseExpiry": {
+          "type": "string",
+          "description": "The expiration date of the driver's license.",
+          "format": "date-time"
+        },
+        "address": {
+          "type": "string",
+          "description": "The driver's address."
+        },
+        "maritalStatus": {
+          "type": "string",
+          "description": "The driver's marital status."
+        },
+        "availability": {
+          "type": "boolean",
+          "description": "Indicates whether the driver is currently available for pickups."
+        },
+        "documents": {
+          "type": "array",
+          "description": "An array of URLs pointing to the driver's documents (NRC, License, Proof of Address).",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "licenseNo",
+        "licenseExpiry",
+        "address",
+        "maritalStatus",
+        "availability",
+        "documents"
+      ]
+    },
+    "Client": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Client",
+      "type": "object",
+      "description": "Represents a client in the SuCAR system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the client."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:1 Client)"
+        },
+        "nrcNumber": {
+          "type": "string",
+          "description": "The client's National Registration Card (NRC) number."
+        },
+        "cars": {
+          "type": "array",
+          "description": "An array of car details owned by the client.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "nrcNumber",
+        "cars"
+      ]
+    },
+    "Provider": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Provider",
+      "type": "object",
+      "description": "Represents a car wash service provider in the SuCAR system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the service provider."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:1 Provider)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the car wash."
+        },
+        "location": {
+          "type": "string",
+          "description": "The address or location of the car wash."
+        },
+        "baysCount": {
+          "type": "number",
+          "description": "The number of washing bays available at the car wash."
+        },
+        "services": {
+          "type": "array",
+          "description": "An array of services offered by the car wash.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "approved": {
+          "type": "boolean",
+          "description": "Indicates whether the service provider has been approved by an administrator."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "location",
+        "baysCount",
+        "services",
+        "approved"
+      ]
+    },
+    "Booking": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Booking",
+      "type": "object",
+      "description": "Represents a booking in the SuCAR system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the booking."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Reference to Client. (Relationship: Client 1:N Booking)"
+        },
+        "driverId": {
+          "type": "string",
+          "description": "Reference to Driver. (Relationship: Driver 1:N Booking)"
+        },
+        "providerId": {
+          "type": "string",
+          "description": "Reference to Provider. (Relationship: Provider 1:N Booking)"
+        },
+        "pickupLocation": {
+          "type": "string",
+          "description": "The pickup location for the car wash service."
+        },
+        "carDetails": {
+          "type": "string",
+          "description": "Details of the car being washed (make, model, plate, color)."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the booking (requested, picked_up, in_wash, drying, done, delivered)."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the booking was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the booking was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "clientId",
+        "driverId",
+        "providerId",
+        "pickupLocation",
+        "carDetails",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Payment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Payment",
+      "type": "object",
+      "description": "Represents a payment in the SuCAR system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the payment."
+        },
+        "bookingId": {
+          "type": "string",
+          "description": "Reference to Booking. (Relationship: Booking 1:N Payment)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount paid for the booking."
+        },
+        "method": {
+          "type": "string",
+          "description": "The payment method used (cash, mobile_money, card)."
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the payment (pending, paid, failed)."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the payment was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "bookingId",
+        "amount",
+        "method",
+        "status",
+        "createdAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. Path-based ownership for user data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/drivers/{driverId}",
+        "definition": {
+          "entityName": "Driver",
+          "schema": {
+            "$ref": "#/backend/entities/Driver"
+          },
+          "description": "Stores driver-specific information. Separate collection for drivers for QAPs.",
+          "params": [
+            {
+              "name": "driverId",
+              "description": "The unique identifier of the driver."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/clients/{clientId}",
+        "definition": {
+          "entityName": "Client",
+          "schema": {
+            "$ref": "#/backend/entities/Client"
+          },
+          "description": "Stores client-specific information. Separate collection for clients for QAPs.",
+          "params": [
+            {
+              "name": "clientId",
+              "description": "The unique identifier of the client."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/providers/{providerId}",
+        "definition": {
+          "entityName": "Provider",
+          "schema": {
+            "$ref": "#/backend/entities/Provider"
+          },
+          "description": "Stores car wash provider information. Separate collection for providers for QAPs.",
+          "params": [
+            {
+              "name": "providerId",
+              "description": "The unique identifier of the provider."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/bookings/{bookingId}",
+        "definition": {
+          "entityName": "Booking",
+          "schema": {
+            "$ref": "#/backend/entities/Booking"
+          },
+          "description": "Stores booking information. Includes denormalized clientId, driverId, and providerId for authorization independence.",
+          "params": [
+            {
+              "name": "bookingId",
+              "description": "The unique identifier of the booking."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/payments/{paymentId}",
+        "definition": {
+          "entityName": "Payment",
+          "schema": {
+            "$ref": "#/backend/entities/Payment"
+          },
+          "description": "Stores payment information related to bookings.",
+          "params": [
+            {
+              "name": "paymentId",
+              "description": "The unique identifier of the payment."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "roles_admin",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Dedicated collection for storing admin roles, using Existence over Content (document existence indicates admin status).",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who is an admin."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to provide a secure, scalable, and easily maintainable system for the SuCAR application. The design prioritizes authorization independence by denormalizing relevant authorization data and leverages structural segregation to maintain a homogeneous security posture within each collection. The structure also considers the specific requirements outlined for each role (admin, driver, client, provider).\n\nAuthorization Independence is achieved through denormalization. For example, while bookings are related to clients, drivers, and providers, the relevant authorization information (e.g., user IDs) is directly accessible within the booking document. This eliminates the need for complex `get()` calls in security rules and ensures that operations remain atomic.\n\nThe QAPs are supported via a combination of structural segregation and membership models. Path-based ownership is employed for user-specific data (e.g., `/users/{userId}/...`). Collaborative data (e.g., access to a specific provider's bookings) can leverage a membership map within the provider document, if required.  However, given the 1:N relationships expressed in the data model, path-based ownership is primarily favored.\n\nThis structure also accommodates the admin role by potentially using a dedicated `/roles_admin/{uid}` collection or similar to efficiently manage global admin privileges, adhering to the Existence over Content principle.  The use of explicit state modeling with a `status` field in the `bookings` collection enhances data clarity and predictability."
+  }
+}

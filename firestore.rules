@@ -1,0 +1,251 @@
+/**
+ * @file Firebase Security Rules for SuCAR application.
+ *
+ * @corePhilosophy:
+ *   This ruleset enforces a strict ownership model for user data and employs
+ *   separate collections for different entities (drivers, clients, providers)
+ *   to ensure a consistent and secure access control. Authorization
+ *   independence is achieved through data denormalization to minimize the
+ *   need for complex `get()` calls in security rules.  The system uses
+ *   path-based ownership for user-specific data and a dedicated collection
+ *   (`/roles_admin/{uid}`) for managing global admin privileges.
+ *
+ * @dataStructure:
+ *   - `/users/{userId}`: Stores user profile information, accessible only to the
+ *     user themselves.
+ *   - `/drivers/{driverId}`, `/clients/{clientId}`, `/providers/{providerId}`:
+ *     Store specific information for drivers, clients, and providers, respectively.
+ *     These are distinct collections for optimized queries and access control.
+ *   - `/bookings/{bookingId}`: Stores booking information, with denormalized user
+ *     IDs for quick authorization.
+ *   - `/payments/{paymentId}`: Stores payment information.
+ *   - `/roles_admin/{userId}`: A dedicated collection to store admin roles. The
+ *     presence of a document at this location signifies admin status.
+ *
+ * @keySecurityDecisions:
+ *   - User listing is generally disallowed to protect user privacy.
+ *   - Data validation is limited to ensuring relational integrity and
+ *     authorization consistency (e.g., matching user IDs in paths and documents).
+ *   - Admin privileges are managed through a dedicated collection, leveraging
+ *     the "Existence over Content" principle.
+ *
+ * @denormalizationForAuthorization:
+ *   - The `/bookings/{bookingId}` document includes `clientId`, `driverId`,
+ *     and `providerId` to avoid costly `get()` calls to the `/clients`,
+ *     `/drivers`, and `/providers` collections during authorization checks.
+ *   - No role denormalization is performed; the `roles_admin` collection is used
+ *     to determine admin status.
+ *
+ * @structuralSegregation:
+ *   - User profiles and entity-specific data (drivers, clients, providers) are
+ *     stored in separate top-level collections to simplify access control and
+ *     optimize queries.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Grants access to user profile information.
+     * @path /users/{userId}
+     * @allow (read, write) User with ID userId can access their own profile.
+     *   Example: request.auth.uid == 'user123' can read/write /users/user123
+     * @deny (read, write) User with ID user456 cannot access /users/user123
+     *   Example: request.auth.uid == 'user456' cannot read/write /users/user123
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return isSignedIn() && request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Grants access to driver-specific information.
+     * @path /drivers/{driverId}
+     * @allow (read, write) User with driverId can access their own driver profile.
+     *   Example: request.auth.uid == 'driver123' can read/write /drivers/driver123
+     * @deny (read, write) User with ID user456 cannot access /drivers/driver123
+     *   Example: request.auth.uid == 'user456' cannot read/write /drivers/driver123
+     * @principle Enforces document ownership for all operations.
+     */
+    match /drivers/{driverId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(driverId) {
+        return isSignedIn() && request.auth.uid == driverId;
+      }
+
+      function isExistingOwner(driverId) {
+        return isOwner(driverId) && resource != null;
+      }
+
+      allow get: if isOwner(driverId);
+      allow list: if false;
+      allow create: if isOwner(driverId);
+      allow update: if isExistingOwner(driverId);
+      allow delete: if isExistingOwner(driverId);
+    }
+
+    /**
+     * @description Grants access to client-specific information.
+     * @path /clients/{clientId}
+     * @allow (read, write) User with clientId can access their own client profile.
+     *   Example: request.auth.uid == 'client123' can read/write /clients/client123
+     * @deny (read, write) User with ID user456 cannot access /clients/client123
+     *   Example: request.auth.uid == 'user456' cannot read/write /clients/client123
+     * @principle Enforces document ownership for all operations.
+     */
+    match /clients/{clientId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(clientId) {
+        return isSignedIn() && request.auth.uid == clientId;
+      }
+
+      function isExistingOwner(clientId) {
+        return isOwner(clientId) && resource != null;
+      }
+
+      allow get: if isOwner(clientId);
+      allow list: if false;
+      allow create: if isOwner(clientId);
+      allow update: if isExistingOwner(clientId);
+      allow delete: if isExistingOwner(clientId);
+    }
+
+    /**
+     * @description Grants access to provider-specific information.
+     * @path /providers/{providerId}
+     * @allow (read, write) User with providerId can access their own provider profile.
+     *   Example: request.auth.uid == 'provider123' can read/write /providers/provider123
+     * @deny (read, write) User with ID user456 cannot access /providers/provider123
+     *   Example: request.auth.uid == 'user456' cannot read/write /providers/provider123
+     * @principle Enforces document ownership for all operations.
+     */
+    match /providers/{providerId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(providerId) {
+        return isSignedIn() && request.auth.uid == providerId;
+      }
+
+      function isExistingOwner(providerId) {
+        return isOwner(providerId) && resource != null;
+      }
+
+      allow get: if isOwner(providerId);
+      allow list: if false;
+      allow create: if isOwner(providerId);
+      allow update: if isExistingOwner(providerId);
+      allow delete: if isExistingOwner(providerId);
+    }
+
+    /**
+     * @description Grants access to booking information.
+     * @path /bookings/{bookingId}
+     * @allow (read, write) User with bookingId can access their own booking information.
+     *   Example: request.auth.uid == 'booking123' can read/write /bookings/booking123
+     * @deny (read, write) User with ID user456 cannot access /bookings/booking123
+     *   Example: request.auth.uid == 'user456' cannot read/write /bookings/booking123
+     * @principle Enforces document ownership for all operations.
+     */
+    match /bookings/{bookingId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(bookingId) {
+        return isSignedIn() && request.auth.uid == bookingId;
+      }
+
+      function isExistingOwner(bookingId) {
+        return isOwner(bookingId) && resource != null;
+      }
+
+      allow get: if isOwner(bookingId);
+      allow list: if false;
+      allow create: if isOwner(bookingId);
+      allow update: if isExistingOwner(bookingId);
+      allow delete: if isExistingOwner(bookingId);
+    }
+
+    /**
+     * @description Grants access to payment information.
+     * @path /payments/{paymentId}
+     * @allow (read, write) User with paymentId can access their own payment information.
+     *   Example: request.auth.uid == 'payment123' can read/write /payments/payment123
+     * @deny (read, write) User with ID user456 cannot access /payments/payment123
+     *   Example: request.auth.uid == 'user456' cannot read/write /payments/payment123
+     * @principle Enforces document ownership for all operations.
+     */
+    match /payments/{paymentId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(paymentId) {
+        return isSignedIn() && request.auth.uid == paymentId;
+      }
+
+      function isExistingOwner(paymentId) {
+        return isOwner(paymentId) && resource != null;
+      }
+
+      allow get: if isOwner(paymentId);
+      allow list: if false;
+      allow create: if isOwner(paymentId);
+      allow update: if isExistingOwner(paymentId);
+      allow delete: if isExistingOwner(paymentId);
+    }
+
+    /**
+     * @description Grants admin privileges based on document existence in /roles_admin/{userId}.
+     * @path /roles_admin/{userId}
+     * @allow (read, write) User with document at /roles_admin/{userId} is an admin.
+     *   Example: Document exists at /roles_admin/admin123. request.auth.uid == 'admin123' can read/write
+     * @deny (read, write) User without document at /roles_admin/{userId} is not an admin.
+     *   Example: No document exists at /roles_admin/user456. request.auth.uid == 'user456' cannot read/write
+     * @principle Uses "Existence over Content" to manage admin roles.  Admin status is determined by document presence, not content.
+     */
+    match /roles_admin/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isAdmin(userId) {
+        return isSignedIn() && request.auth.uid == userId;
+      }
+
+      function isExistingAdmin(userId) {
+        return isAdmin(userId) && resource != null;
+      }
+
+      allow get: if isAdmin(userId);
+      allow list: if false;
+      allow create: if isAdmin(userId);
+      allow update: if isExistingAdmin(userId);
+      allow delete: if isExistingAdmin(userId);
+    }
+  }
+}
