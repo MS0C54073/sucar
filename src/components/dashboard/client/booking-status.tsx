@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { BookingStatus, Booking } from "@/lib/types";
-import { useCollection, useFirebase } from "@/firebase";
+import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection, query, where, limit } from "firebase/firestore";
 
 const allStatuses: BookingStatus[] = [
@@ -57,7 +57,7 @@ export function BookingStatus() {
   const { user } = useAuth();
   const { firestore } = useFirebase();
 
-  const bookingsQuery = useMemo(() => {
+  const bookingsQuery = useMemoFirebase(() => {
     if (!user) return null;
     return query(
       collection(firestore, "bookings"),
