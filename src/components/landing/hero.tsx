@@ -1,21 +1,20 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export function Hero() {
-  const heroImage = PlaceHolderImages.find((img) => img.id === "hero");
+  const heroImageUrl = "https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA";
 
   return (
     <section className="relative w-full py-20 md:py-32 lg:py-40">
-      {heroImage && (
+      {heroImageUrl && (
         <Image
-          src={heroImage.imageUrl}
-          alt={heroImage.description}
+          src={heroImageUrl}
+          alt="A shiny clean car in a modern setting"
           fill
           className="object-cover"
           priority
-          data-ai-hint={heroImage.imageHint}
+          data-ai-hint="clean car"
         />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" />

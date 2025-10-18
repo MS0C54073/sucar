@@ -7,4 +7,5 @@ export type ImagePlaceholder = {
   imageHint: string;
 };
 
-export const PlaceHolderImages: ImagePlaceholder[] = data.placeholderImages;
+// This is now empty as the hero image is directly in the component.
+export const PlaceHolderImages: ImagePlaceholder[] = data.placeholderImages.filter(img => img.id !== 'hero');

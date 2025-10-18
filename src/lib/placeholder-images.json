@@ -1,45 +1,39 @@
 {
   "placeholderImages": [
     {
-      "id": "hero",
-      "description": "A shiny clean car in a modern setting",
-      "imageUrl": "https://picsum.photos/seed/sucar-hero/1920/1080",
-      "imageHint": "clean car"
-    },
-    {
       "id": "feature-booking",
       "description": "A person booking a service on a smartphone",
-      "imageUrl": "https://picsum.photos/seed/sucar-booking/600/400",
+      "imageUrl": "https://images.unsplash.com/photo-1712948222011-c732f377cb89?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxwaG9uZSUyMGJvb2tpbmd8ZW58MHx8fHwxNzYwNzMxNzUyfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "phone booking"
     },
     {
       "id": "feature-tracking",
       "description": "A map showing a car's route",
-      "imageUrl": "https://picsum.photos/seed/sucar-tracking/600/400",
+      "imageUrl": "https://images.unsplash.com/photo-1625434132728-97518a6a3c86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtYXAlMjByb3V0ZXxlbnwwfHx8fDE3NjA3NDc3MjJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "map route"
     },
     {
       "id": "feature-payment",
       "description": "Secure online payment process",
-      "imageUrl": "https://picsum.photos/seed/sucar-payment/600/400",
+      "imageUrl": "https://images.unsplash.com/photo-1668854249302-4ab414ca4d57?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxvbmxpbmUlMjBwYXltZW50fGVufDB8fHx8MTc2MDczMTQyNXww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "online payment"
     },
     {
       "id": "avatar-1",
       "description": "User avatar",
-      "imageUrl": "https://picsum.photos/seed/avatar1/100/100",
+      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjA3MzA4MTF8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "person portrait"
     },
     {
       "id": "avatar-2",
       "description": "User avatar",
-      "imageUrl": "https://picsum.photos/seed/avatar2/100/100",
+      "imageUrl": "https://images.unsplash.com/photo-1521119989659-a83eee488004?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cGVyc29uJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzYwNzMwODExfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "person portrait"
     },
     {
       "id": "avatar-3",
       "description": "User avatar",
-      "imageUrl": "https://picsum.photos/seed/avatar3/100/100",
+      "imageUrl": "https://images.unsplash.com/photo-1557053910-d9eadeed1c58?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx3b21hbiUyMHBvcnRyYWl0fGVufDB8fHx8MTc2MDczMDk0Nnww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "woman portrait"
     }
   ]
