@@ -22,6 +22,9 @@ const initialDriverPositions = [
   { top: "25%", left: "30%" }, // North-west
   { top: "75%", left: "70%" }, // South-east
   { top: "50%", left: "65%" }, // Central-east
+  { top: "45%", left: "25%" }, // West
+  { top: "20%", left: "60%" }, // North-east
+  { top: "80%", left: "50%" }, // South
 ];
 
 interface Position {
@@ -43,7 +46,7 @@ export function MapView() {
       .slice(0, initialDriverPositions.length)
       .map((driver, index) => ({
         ...driver,
-        position: initialDriverPositions[index],
+        position: initialDriverPositions[index % initialDriverPositions.length], // Use modulo to cycle through positions if not enough drivers
         user: MOCK_USERS.find((u) => u.userId === driver.userId),
       }));
     setSimulatedDrivers(driversToSimulate);
@@ -81,11 +84,11 @@ export function MapView() {
   return (
     <Card className="relative w-full h-[400px] overflow-hidden">
       <Image
-        src="https://picsum.photos/seed/google-maps-lusaka/1200/800"
+        src="https://picsum.photos/seed/lusaka-satellite/1200/800"
         alt="A Google Maps style satellite view of Lusaka showing nearby drivers"
         fill
         className="object-cover"
-        data-ai-hint="google maps satellite"
+        data-ai-hint="satellite map"
       />
       <div className="absolute inset-0 bg-black/10" />
 
