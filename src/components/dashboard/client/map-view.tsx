@@ -81,11 +81,11 @@ export function MapView() {
   return (
     <Card className="relative w-full h-[400px] overflow-hidden">
       <Image
-        src="https://picsum.photos/seed/lusaka-map/1200/800"
-        alt="Map of Lusaka showing nearby drivers"
+        src="https://picsum.photos/seed/google-maps-lusaka/1200/800"
+        alt="A Google Maps style satellite view of Lusaka showing nearby drivers"
         fill
         className="object-cover"
-        data-ai-hint="Lusaka street map"
+        data-ai-hint="google maps satellite"
       />
       <div className="absolute inset-0 bg-black/10" />
 
@@ -102,7 +102,7 @@ export function MapView() {
                 )}
                 style={driver.position}
               >
-                <MapPin className="h-8 w-8 drop-shadow-lg" />
+                <MapPin className="h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" />
               </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -120,7 +120,7 @@ export function MapView() {
       >
         <div className="relative">
           <div className="absolute -inset-2 rounded-full bg-blue-500/20 animate-ping"></div>
-          <MapPin className="relative h-8 w-8" fill="currentColor" />
+          <MapPin className="relative h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" fill="currentColor" />
         </div>
         <TooltipProvider>
           <Tooltip>
