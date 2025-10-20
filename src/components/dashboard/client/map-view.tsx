@@ -13,32 +13,29 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { MOCK_DRIVERS, MOCK_USERS } from "@/lib/mock-data";
 
-// Function to generate random positions for drivers on the map
-const getRandomPosition = () => ({
-  top: `${Math.random() * 85 + 5}%`, // 5% to 90%
-  left: `${Math.random() * 90 + 5}%`, // 5% to 95%
-});
+// Pre-defined positions for drivers on the Lusaka map
+const driverPositions = [
+  { top: "35%", left: "55%" }, // East of center
+  { top: "60%", left: "40%" }, // South-west of center
+  { top: "25%", left: "30%" }, // North-west
+  { top: "75%", left: "70%" }, // South-east
+  { top: "50%", left: "65%" }, // Central-east
+];
 
 export function MapView() {
-  const [driverPositions] = React.useState(
-    Array(MOCK_DRIVERS.length)
-      .fill(0)
-      .map(getRandomPosition)
-  );
-
   return (
     <Card className="relative w-full h-[400px] overflow-hidden">
       <Image
-        src="https://picsum.photos/seed/map/1200/800"
-        alt="Map of nearby drivers"
+        src="https://picsum.photos/seed/lusaka-map/1200/800"
+        alt="Map of Lusaka showing nearby drivers"
         fill
         className="object-cover"
-        data-ai-hint="street map"
+        data-ai-hint="Lusaka street map"
       />
       <div className="absolute inset-0 bg-black/10" />
 
       <TooltipProvider>
-        {MOCK_DRIVERS.map((driver, index) => {
+        {MOCK_DRIVERS.slice(0, driverPositions.length).map((driver, index) => {
           const user = MOCK_USERS.find(u => u.userId === driver.userId);
           return (
             <Tooltip key={driver.id}>
@@ -64,7 +61,7 @@ export function MapView() {
         })}
       </TooltipProvider>
 
-      {/* User's location pin */}
+      {/* User's location pin (central Lusaka) */}
       <div
         className="absolute text-blue-500"
         style={{ top: "50%", left: "50%" }}
@@ -73,6 +70,14 @@ export function MapView() {
           <div className="absolute -inset-2 rounded-full bg-blue-500/20 animate-ping"></div>
           <MapPin className="relative h-8 w-8" fill="currentColor" />
         </div>
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild><div className="w-full h-full absolute inset-0"></div></TooltipTrigger>
+                <TooltipContent>
+                    <p>Your Location</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
       </div>
     </Card>
   );
