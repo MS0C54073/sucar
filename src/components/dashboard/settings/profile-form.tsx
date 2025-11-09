@@ -51,7 +51,7 @@ export function ProfileForm() {
       form.reset({
         name: user.name,
         email: user.email,
-        phone: user.phone,
+        phone: user.phone || "",
       });
     }
   }, [user, form]);
@@ -123,4 +123,3 @@ export function ProfileForm() {
     </Card>
   );
 }
-
