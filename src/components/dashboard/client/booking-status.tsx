@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -9,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAuth } from "@/context/auth-provider";
 import {
   CheckCircle2,
   Circle,
@@ -22,8 +20,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { BookingStatus as BookingStatusType } from "@/lib/types";
-import { MOCK_BOOKINGS } from "@/lib/mock-data";
+import type { Booking, BookingStatus as BookingStatusType } from "@/lib/types";
 
 
 const allStatuses: BookingStatusType[] = [
@@ -59,58 +56,11 @@ const statusText: Record<BookingStatusType, string> = {
 };
 
 interface BookingStatusProps {
-    onStatusChange: (status: BookingStatusType) => void;
+    activeBooking?: Booking;
 }
 
-export function BookingStatus({ onStatusChange }: BookingStatusProps) {
-  const { user } = useAuth();
+export function BookingStatus({ activeBooking }: BookingStatusProps) {
   
-  // Find an active booking for the current mock user
-  const activeBooking = MOCK_BOOKINGS.find(
-    (b) =>
-      b.clientId === user?.userId &&
-      b.status !== "delivered" &&
-      b.status !== "cancelled"
-  );
-  
-  const [currentStatus, setCurrentStatus] = useState<
-    BookingStatusType | undefined
-  >(activeBooking?.status);
-
-  // This effect is for demo purposes to simulate status progression
-  useEffect(() => {
-    if (!activeBooking) return;
-    
-    // Set initial status and notify parent
-    const initialStatus = activeBooking.status;
-    setCurrentStatus(initialStatus);
-    onStatusChange(initialStatus);
-
-
-    const statusIndex = allStatuses.indexOf(initialStatus);
-    if (statusIndex < 0 || statusIndex === allStatuses.length - 1) return;
-
-    const interval = setInterval(() => {
-      setCurrentStatus(prevStatus => {
-        if (!prevStatus) return prevStatus;
-
-        const currentIndex = allStatuses.indexOf(prevStatus);
-        const nextIndex = currentIndex + 1;
-
-        if (nextIndex < allStatuses.length) {
-            const newStatus = allStatuses[nextIndex];
-            onStatusChange(newStatus); // Notify parent of status change
-            return newStatus;
-        }
-        
-        clearInterval(interval);
-        return prevStatus;
-      });
-    }, 8000); // Simulate status change every 8 seconds
-
-    return () => clearInterval(interval);
-  }, [activeBooking, onStatusChange]);
-
   if (!activeBooking) {
     return (
       <Card className="flex items-center justify-center h-full min-h-[200px]">
@@ -124,6 +74,7 @@ export function BookingStatus({ onStatusChange }: BookingStatusProps) {
     );
   }
 
+  const currentStatus = activeBooking.status;
   const currentIndex = currentStatus ? allStatuses.indexOf(currentStatus) : -1;
 
   return (

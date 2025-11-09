@@ -9,11 +9,23 @@ import { MapView } from "@/components/dashboard/client/map-view";
 import { BookingStatus } from "@/components/dashboard/client/booking-status";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
-import type { BookingStatus as BookingStatusType } from "@/lib/types";
+import type { BookingStatus as BookingStatusType, Booking } from "@/lib/types";
+import { useBooking } from "@/context/booking-provider";
+import { useAuth } from "@/context/auth-provider";
 
 export default function ClientDashboardPage() {
   const [locationSet, setLocationSet] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState<BookingStatusType | undefined>(undefined);
+  const { user } = useAuth();
+  const { bookings } = useBooking();
+
+  const activeBooking = bookings.find(
+    (b) =>
+      b.clientId === user?.userId &&
+      b.status !== "delivered" &&
+      b.status !== "cancelled"
+  );
+  
+  const currentStatus = activeBooking?.status;
 
   if (!locationSet) {
     return <LocationPromptDialog onLocationSet={() => setLocationSet(true)} />;
@@ -44,12 +56,12 @@ export default function ClientDashboardPage() {
                         <CardDescription>See nearby drivers and track your active pickup.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <MapView currentStatus={currentStatus} />
+                        <MapView activeBooking={activeBooking} />
                     </CardContent>
                 </Card>
             </div>
             <div className="lg:col-span-2">
-                 <BookingStatus onStatusChange={setCurrentStatus} />
+                 <BookingStatus activeBooking={activeBooking} />
             </div>
         </div>
     </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/context/auth-provider";
+import { BookingProvider } from "@/context/booking-provider";
 import "./globals.css";
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -35,8 +36,10 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          {children}
-          <Toaster />
+          <BookingProvider>
+            {children}
+            <Toaster />
+          </BookingProvider>
         </AuthProvider>
       </body>
     </html>

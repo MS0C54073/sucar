@@ -12,9 +12,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { MOCK_DRIVERS, MOCK_USERS, MOCK_BOOKINGS } from "@/lib/mock-data";
-import type { Driver, BookingStatus as BookingStatusType } from "@/lib/types";
+import { MOCK_DRIVERS, MOCK_USERS } from "@/lib/mock-data";
+import type { Driver, Booking } from "@/lib/types";
 import { useAuth } from "@/context/auth-provider";
+import { useBooking } from "@/context/booking-provider";
 
 // Define key locations in Lusaka
 const USER_LOCATION = { longitude: 28.2814, latitude: -15.4167 }; // Lusaka center
@@ -48,22 +49,15 @@ const interpolate = (start: Position, end: Position, factor: number): Position =
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
-export function MapView({ currentStatus }: { currentStatus?: BookingStatusType }) {
+export function MapView({ activeBooking }: { activeBooking?: Booking }) {
   const { user } = useAuth();
+  const { drivers } = useBooking();
   const [simulatedDrivers, setSimulatedDrivers] = useState<SimulatedDriver[]>([]);
   const [assignedDriver, setAssignedDriver] = useState<SimulatedDriver | null>(null);
 
-  // Find the active booking for the current user
-  const activeBooking = MOCK_BOOKINGS.find(
-    (b) =>
-      b.clientId === user?.userId &&
-      b.status !== "delivered" &&
-      b.status !== "cancelled"
-  );
-
   // Initialize drivers
   useEffect(() => {
-    const allApprovedDrivers = MOCK_DRIVERS
+    const allApprovedDrivers = drivers
       .filter(d => d.approved)
       .map((driver) => ({
         ...driver,
@@ -79,7 +73,7 @@ export function MapView({ currentStatus }: { currentStatus?: BookingStatusType }
       setAssignedDriver(null);
       setSimulatedDrivers(allApprovedDrivers);
     }
-  }, [user, activeBooking]);
+  }, [user, activeBooking, drivers]);
 
 
   // Simulation loop for driver movement
@@ -87,6 +81,8 @@ export function MapView({ currentStatus }: { currentStatus?: BookingStatusType }
     if (!activeBooking) return;
 
     const interval = setInterval(() => {
+      const currentStatus = activeBooking.status;
+
       if (assignedDriver && currentStatus) {
         setAssignedDriver(prevDriver => {
           if (!prevDriver) return null;
@@ -101,9 +97,9 @@ export function MapView({ currentStatus }: { currentStatus?: BookingStatusType }
                  break;
             case 'picked_up':
             case 'in_wash':
+            case 'drying':
                 targetPosition = CAR_WASH_LOCATION;
                 break;
-            case 'drying':
             case 'done':
                 targetPosition = USER_LOCATION;
                 break;
@@ -126,22 +122,25 @@ export function MapView({ currentStatus }: { currentStatus?: BookingStatusType }
 
       setSimulatedDrivers((prevDrivers) =>
         prevDrivers.map((driver) => {
-          const newLat = driver.position.latitude + (Math.random() - 0.5) * 0.005;
-          const newLon = driver.position.longitude + (Math.random() - 0.5) * 0.005;
-          
-          return {
-            ...driver,
-            position: {
-              latitude: Math.max(-15.5, Math.min(-15.3, newLat)),
-              longitude: Math.max(28.2, Math.min(28.4, newLon)),
-            },
-          };
+          if (driver.availability) {
+            const newLat = driver.position.latitude + (Math.random() - 0.5) * 0.005;
+            const newLon = driver.position.longitude + (Math.random() - 0.5) * 0.005;
+            
+            return {
+              ...driver,
+              position: {
+                latitude: Math.max(-15.5, Math.min(-15.3, newLat)),
+                longitude: Math.max(28.2, Math.min(28.4, newLon)),
+              },
+            };
+          }
+          return driver;
         })
       );
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [assignedDriver, currentStatus, activeBooking]);
+  }, [assignedDriver, activeBooking]);
 
   const allDriversToDisplay = assignedDriver ? [...simulatedDrivers, assignedDriver] : simulatedDrivers;
 

@@ -12,21 +12,66 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/auth-provider";
+import { useBooking } from "@/context/booking-provider";
 import { Separator } from "@/components/ui/separator";
 import { Car, MapPin, User as UserIcon } from "lucide-react";
-import { MOCK_BOOKINGS, MOCK_DRIVERS, MOCK_USERS } from "@/lib/mock-data";
+import { MOCK_USERS } from "@/lib/mock-data";
+import type { BookingStatus } from "@/lib/types";
+import { toast } from "@/hooks/use-toast";
+
+const statusProgression: Record<BookingStatus, BookingStatus | null> = {
+  requested: "confirmed",
+  confirmed: "picked_up",
+  picked_up: "in_wash",
+  in_wash: "drying",
+  drying: "done",
+  done: "delivered",
+  delivered: null,
+  cancelled: null,
+};
+
+const getNextStatusText = (status: BookingStatus): string => {
+    switch (status) {
+        case "requested": return "Accept Job";
+        case "confirmed": return "Confirm Pickup";
+        case "picked_up": return "Arrived at Car Wash";
+        case "in_wash": return "Mark as Drying";
+        case "drying": return "Mark as Ready";
+        case "done": return "Confirm Delivery";
+        default: return "Update Status";
+    }
+}
 
 export function ActiveTrips() {
   const { user } = useAuth();
+  const { bookings, drivers, updateBookingStatus } = useBooking();
   
-  const driverDetails = MOCK_DRIVERS.find(d => d.userId === user?.userId);
+  const driverDetails = drivers.find(d => d.userId === user?.userId);
 
-  const driverBookings = MOCK_BOOKINGS.filter(
+  const driverBookings = bookings.filter(
     (b) =>
       b.driverId === driverDetails?.driverId &&
       b.status !== "delivered" &&
       b.status !== "cancelled"
   );
+
+  const handleUpdateStatus = (bookingId: string, currentStatus: BookingStatus) => {
+    const nextStatus = statusProgression[currentStatus];
+    if (nextStatus) {
+      updateBookingStatus(bookingId, nextStatus);
+      toast({
+        title: "Status Updated!",
+        description: `Booking status changed to "${nextStatus.replace("_", " ")}".`
+      })
+    } else {
+        toast({
+            variant: "destructive",
+            title: "Cannot Update",
+            description: "This booking is already completed or cancelled.",
+        })
+    }
+  };
+
 
   if (!user || !driverDetails) {
     return (
@@ -71,6 +116,7 @@ export function ActiveTrips() {
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {driverBookings.map((booking) => {
         const client = MOCK_USERS.find(u => u.userId === booking.clientId);
+        const canUpdate = booking.status !== 'delivered' && booking.status !== 'cancelled';
         return (
             <Card key={booking.bookingId} className="flex flex-col">
             <CardHeader>
@@ -78,7 +124,7 @@ export function ActiveTrips() {
                 <div>
                     <CardTitle>Booking #{booking.bookingId.slice(-6)}</CardTitle>
                     <CardDescription>
-                        Status: <span className="font-semibold text-foreground">{booking.status.replace("_", " ")}</span>
+                        For: {client?.name}
                     </CardDescription> 
                 </div>
                 <Badge
@@ -113,7 +159,13 @@ export function ActiveTrips() {
                 </div>
             </CardContent>
             <CardFooter>
-                <Button className="w-full">Update Status</Button>
+                <Button 
+                    className="w-full"
+                    onClick={() => handleUpdateStatus(booking.bookingId, booking.status)}
+                    disabled={!canUpdate}
+                >
+                    {getNextStatusText(booking.status)}
+                </Button>
             </CardFooter>
             </Card>
         )
