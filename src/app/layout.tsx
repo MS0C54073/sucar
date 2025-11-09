@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/context/auth-provider";
 import "./globals.css";
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 export const metadata: Metadata = {
   title: "SuCAR: Car Wash Pickup System",

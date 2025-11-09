@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
+import Map, { Marker } from 'react-map-gl';
 import { Card } from "@/components/ui/card";
 import { Car, MapPin, Wrench } from "lucide-react";
 import {
@@ -16,21 +16,21 @@ import { MOCK_DRIVERS, MOCK_USERS, MOCK_BOOKINGS } from "@/lib/mock-data";
 import type { Driver, BookingStatus as BookingStatusType } from "@/lib/types";
 import { useAuth } from "@/context/auth-provider";
 
-// Define key locations on the map as percentages
-const USER_LOCATION = { top: 50, left: 50 };
-const CAR_WASH_LOCATION = { top: 20, left: 80 };
+// Define key locations in Lusaka
+const USER_LOCATION = { longitude: 28.2814, latitude: -15.4167 }; // Lusaka center
+const CAR_WASH_LOCATION = { longitude: 28.3228, latitude: -15.3986 }; // East Park Mall area
 
 // Pre-defined initial positions for drivers
-const initialDriverPositions: Record<string, { top: number; left: number }> = {
-  "driver-01-data": { top: 60, left: 40 },
-  "driver-02-data": { top: 25, left: 30 },
-  "driver-03-data": { top: 35, left: 55 }, // Added more drivers for a fuller map
-  "driver-04-data": { top: 75, left: 70 },
+const initialDriverPositions: Record<string, { longitude: number; latitude: number }> = {
+  "driver-01-data": { longitude: 28.2750, latitude: -15.4200 },
+  "driver-02-data": { longitude: 28.2900, latitude: -15.4100 },
+  "driver-03-data": { longitude: 28.2850, latitude: -15.4250 },
+  "driver-04-data": { longitude: 28.3000, latitude: -15.4300 },
 };
 
 interface Position {
-  top: number;
-  left: number;
+  longitude: number;
+  latitude: number;
 }
 
 interface SimulatedDriver extends Driver {
@@ -39,12 +39,14 @@ interface SimulatedDriver extends Driver {
 }
 
 // Function to interpolate between two points
-const interpolate = (start: Position, end: Position, factor: number) => {
+const interpolate = (start: Position, end: Position, factor: number): Position => {
   return {
-    top: start.top + (end.top - start.top) * factor,
-    left: start.left + (end.left - start.left) * factor,
+    latitude: start.latitude + (end.latitude - start.latitude) * factor,
+    longitude: start.longitude + (end.longitude - start.longitude) * factor,
   };
 };
+
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
 export function MapView({ currentStatus }: { currentStatus?: BookingStatusType }) {
   const { user } = useAuth();
@@ -61,23 +63,19 @@ export function MapView({ currentStatus }: { currentStatus?: BookingStatusType }
 
   // Initialize drivers
   useEffect(() => {
-    // Show all approved drivers on the map
     const allApprovedDrivers = MOCK_DRIVERS
       .filter(d => d.approved)
       .map((driver) => ({
         ...driver,
-        position: initialDriverPositions[driver.driverId] || { top: Math.random() * 80 + 10, left: Math.random() * 80 + 10 },
+        position: initialDriverPositions[driver.driverId] || { latitude: -15.4167 + (Math.random() - 0.5) * 0.1, longitude: 28.2814 + (Math.random() - 0.5) * 0.1 },
         user: MOCK_USERS.find((u) => u.userId === driver.userId),
       }));
 
     if (activeBooking) {
-      // Find the driver assigned to the active booking
       const assigned = allApprovedDrivers.find(d => d.driverId === activeBooking.driverId) || null;
       setAssignedDriver(assigned);
-      // Other drivers are those who are not assigned
       setSimulatedDrivers(allApprovedDrivers.filter(d => d.driverId !== activeBooking.driverId));
     } else {
-      // If no active booking, all approved drivers are just simulated
       setAssignedDriver(null);
       setSimulatedDrivers(allApprovedDrivers);
     }
@@ -86,42 +84,36 @@ export function MapView({ currentStatus }: { currentStatus?: BookingStatusType }
 
   // Simulation loop for driver movement
   useEffect(() => {
-    if (!activeBooking) return; // Only simulate movement if there is an active booking
+    if (!activeBooking) return;
 
     const interval = setInterval(() => {
-      // Animate assigned driver based on booking status
       if (assignedDriver && currentStatus) {
         setAssignedDriver(prevDriver => {
           if (!prevDriver) return null;
 
           let targetPosition = prevDriver.position;
-          let speed = 0.05; // Represents 5% of the distance per interval
+          let speed = 0.05;
 
           switch (currentStatus) {
             case 'requested':
             case 'confirmed':
-                 // Driver moves towards user for pickup
                  targetPosition = USER_LOCATION;
                  break;
             case 'picked_up':
             case 'in_wash':
-                // Driver moves towards car wash
                 targetPosition = CAR_WASH_LOCATION;
                 break;
             case 'drying':
             case 'done':
-                // Driver moves back to user for delivery
                 targetPosition = USER_LOCATION;
                 break;
             case 'delivered':
-                // Stays at user location
                 targetPosition = USER_LOCATION;
                 break;
           }
           
-          // If close enough, snap to target
-          const distance = Math.sqrt(Math.pow(targetPosition.top - prevDriver.position.top, 2) + Math.pow(targetPosition.left - prevDriver.position.left, 2));
-          if (distance < 1) {
+          const distance = Math.sqrt(Math.pow(targetPosition.latitude - prevDriver.position.latitude, 2) + Math.pow(targetPosition.longitude - prevDriver.position.longitude, 2));
+          if (distance < 0.0001) {
               return {...prevDriver, position: targetPosition};
           }
 
@@ -132,105 +124,102 @@ export function MapView({ currentStatus }: { currentStatus?: BookingStatusType }
         });
       }
 
-      // Animate other drivers randomly to show they are active
       setSimulatedDrivers((prevDrivers) =>
         prevDrivers.map((driver) => {
-          const newTop = driver.position.top + (Math.random() - 0.5) * 2;
-          const newLeft = driver.position.left + (Math.random() - 0.5) * 2;
-          const newAvailability = Math.random() > 0.1;
-
+          const newLat = driver.position.latitude + (Math.random() - 0.5) * 0.005;
+          const newLon = driver.position.longitude + (Math.random() - 0.5) * 0.005;
+          
           return {
             ...driver,
-            availability: newAvailability,
             position: {
-              top: Math.max(10, Math.min(90, newTop)),
-              left: Math.max(10, Math.min(90, newLeft)),
+              latitude: Math.max(-15.5, Math.min(-15.3, newLat)),
+              longitude: Math.max(28.2, Math.min(28.4, newLon)),
             },
           };
         })
       );
-    }, 2000); // Update every 2 seconds
+    }, 2000);
 
     return () => clearInterval(interval);
   }, [assignedDriver, currentStatus, activeBooking]);
 
   const allDriversToDisplay = assignedDriver ? [...simulatedDrivers, assignedDriver] : simulatedDrivers;
 
+  if (!MAPBOX_TOKEN) {
+    return (
+      <Card className="flex items-center justify-center w-full h-[400px] lg:h-[500px]">
+        <div className="text-center">
+          <p className="font-semibold">Mapbox Access Token Missing</p>
+          <p className="text-sm text-muted-foreground">Please add your token to the .env file.</p>
+        </div>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="relative w-full h-[400px] lg:h-[500px] overflow-hidden">
-      <Image
-        src="https://picsum.photos/seed/lusaka-map-3/1200/800"
-        alt="A satellite map of Lusaka showing nearby drivers"
-        fill
-        className="object-cover"
-        data-ai-hint="satellite map"
-      />
-      <div className="absolute inset-0 bg-black/10" />
-
-      <TooltipProvider>
-        {allDriversToDisplay.map((driver) => (
-          <Tooltip key={driver.driverId}>
-            <TooltipTrigger asChild>
-              <div
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-linear"
-                style={{ top: `${driver.position.top}%`, left: `${driver.position.left}%` }}
-              >
-                <div className={cn(
-                    "transition-colors",
-                    driver.driverId === assignedDriver?.driverId ? "text-amber-400" : (driver.availability ? "text-primary" : "text-muted-foreground")
-                  )}>
-                    <Car className="h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="font-bold">{driver.user?.name || `Driver`}</p>
-              <p>{driver.driverId === assignedDriver?.driverId ? "On your trip" : (driver.availability ? "Available" : "Unavailable")}</p>
-            </TooltipContent>
-          </Tooltip>
-        ))}
-      </TooltipProvider>
-
-      {/* User's location pin */}
-      <div
-        className="absolute text-blue-500 transform -translate-x-1/2 -translate-y-1/2"
-        style={{ top: `${USER_LOCATION.top}%`, left: `${USER_LOCATION.left}%` }}
+    <Card className="relative w-full h-[400px] lg:h-[500px] overflow-hidden rounded-lg">
+      <Map
+        initialViewState={{
+          longitude: USER_LOCATION.longitude,
+          latitude: USER_LOCATION.latitude,
+          zoom: 12
+        }}
+        mapboxAccessToken={MAPBOX_TOKEN}
+        mapStyle="mapbox://styles/mapbox/streets-v11"
       >
-        <div className="relative">
-          <div className="absolute -inset-2 rounded-full bg-blue-500/20 animate-ping"></div>
-          <MapPin className="relative h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" fill="currentColor" />
-        </div>
         <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="w-full h-full absolute inset-0"></div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Your Location</p>
-            </TooltipContent>
-          </Tooltip>
+            {allDriversToDisplay.map((driver) => (
+            <Marker key={driver.driverId} longitude={driver.position.longitude} latitude={driver.position.latitude} anchor="bottom">
+                <Tooltip>
+                    <TooltipTrigger>
+                        <div className={cn(
+                            "transition-colors",
+                            driver.driverId === assignedDriver?.driverId ? "text-amber-400" : (driver.availability ? "text-primary" : "text-muted-foreground")
+                        )}>
+                            <Car className="h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p className="font-bold">{driver.user?.name || `Driver`}</p>
+                        <p>{driver.driverId === assignedDriver?.driverId ? "On your trip" : (driver.availability ? "Available" : "Unavailable")}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </Marker>
+            ))}
         </TooltipProvider>
-      </div>
 
-       {/* Car Wash Location Pin */}
-      <div
-        className="absolute text-purple-500 transform -translate-x-1/2 -translate-y-1/2"
-        style={{ top: `${CAR_WASH_LOCATION.top}%`, left: `${CAR_WASH_LOCATION.left}%` }}
-      >
-        <div className="relative">
-          <Wrench className="relative h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" fill="currentColor" />
-        </div>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="w-full h-full absolute inset-0"></div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>SparkleClean Wash</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
+        <Marker longitude={USER_LOCATION.longitude} latitude={USER_LOCATION.latitude} anchor="bottom">
+            <div className="text-blue-500">
+                <MapPin className="h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" fill="currentColor" />
+            </div>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                    <div className="w-full h-full absolute inset-0 cursor-pointer"></div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                    <p>Your Location</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        </Marker>
+
+        <Marker longitude={CAR_WASH_LOCATION.longitude} latitude={CAR_WASH_LOCATION.latitude} anchor="bottom">
+            <div className="text-purple-500">
+                <Wrench className="h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" fill="currentColor" />
+            </div>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                     <div className="w-full h-full absolute inset-0 cursor-pointer"></div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                    <p>SparkleClean Wash</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        </Marker>
+      </Map>
     </Card>
   );
 }
