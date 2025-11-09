@@ -24,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/auth-provider";
-import { useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -34,27 +34,24 @@ const formSchema = z.object({
 
 export function ProfileForm() {
   const { user } = useAuth();
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    // Set defaultValues directly from the user object.
-    // The `|| ''` ensures the values are never null or undefined, preventing uncontrolled/controlled errors.
+    // Set defaultValues only when the user object is available.
+    // The || '' ensures the values are never null/undefined, preventing uncontrolled/controlled errors.
     defaultValues: {
       name: user?.name || "",
       email: user?.email || "",
       phone: user?.phone || "",
     },
-  });
-
-  // This useEffect will re-sync the form if the user object changes after initial render.
-  useEffect(() => {
-    if (user) {
-      form.reset({
+    // The values will be updated once the user object is loaded.
+    values: user ? {
         name: user.name,
         email: user.email,
-        phone: user.phone || "",
-      });
-    }
-  }, [user, form]);
+        phone: user.phone || ''
+    } : undefined
+  });
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
@@ -62,6 +59,36 @@ export function ProfileForm() {
       title: "Profile Updated",
       description: "Your information has been saved successfully.",
     });
+  }
+
+  // If the user data is not yet loaded, show a skeleton loader
+  // This prevents trying to access properties of a null `user` object
+  if (!user) {
+    return (
+        <Card className="max-w-2xl">
+            <CardHeader>
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-4 w-64" />
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+                 <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+                 <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+            </CardContent>
+            <CardFooter>
+                <Skeleton className="h-10 w-32" />
+            </CardFooter>
+        </Card>
+    )
   }
 
   return (
