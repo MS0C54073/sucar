@@ -19,14 +19,16 @@ import {
   Wind,
   Sparkles,
   KeyRound,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { BookingStatus as BookingStatusType, Booking } from "@/lib/types";
+import type { BookingStatus as BookingStatusType } from "@/lib/types";
 import { MOCK_BOOKINGS } from "@/lib/mock-data";
 
 
 const allStatuses: BookingStatusType[] = [
   "requested",
+  "confirmed",
   "picked_up",
   "in_wash",
   "drying",
@@ -36,7 +38,7 @@ const allStatuses: BookingStatusType[] = [
 
 const statusIcons: Record<BookingStatusType, React.ReactNode> = {
   requested: <CircleDashed />,
-  confirmed: <CheckCircle2 />,
+  confirmed: <ShieldCheck />,
   picked_up: <KeyRound />,
   in_wash: <Car />,
   drying: <Wind />,
@@ -56,7 +58,11 @@ const statusText: Record<BookingStatusType, string> = {
   cancelled: "Cancelled",
 };
 
-export function BookingStatus() {
+interface BookingStatusProps {
+    onStatusChange: (status: BookingStatusType) => void;
+}
+
+export function BookingStatus({ onStatusChange }: BookingStatusProps) {
   const { user } = useAuth();
   
   // Find an active booking for the current mock user
@@ -75,26 +81,35 @@ export function BookingStatus() {
   useEffect(() => {
     if (!activeBooking) return;
     
-    setCurrentStatus(activeBooking.status);
+    // Set initial status and notify parent
+    const initialStatus = activeBooking.status;
+    setCurrentStatus(initialStatus);
+    onStatusChange(initialStatus);
 
-    const statusIndex = allStatuses.indexOf(activeBooking.status);
+
+    const statusIndex = allStatuses.indexOf(initialStatus);
     if (statusIndex < 0 || statusIndex === allStatuses.length - 1) return;
 
     const interval = setInterval(() => {
       setCurrentStatus(prevStatus => {
         if (!prevStatus) return prevStatus;
+
         const currentIndex = allStatuses.indexOf(prevStatus);
         const nextIndex = currentIndex + 1;
+
         if (nextIndex < allStatuses.length) {
-          return allStatuses[nextIndex];
+            const newStatus = allStatuses[nextIndex];
+            onStatusChange(newStatus); // Notify parent of status change
+            return newStatus;
         }
+        
         clearInterval(interval);
         return prevStatus;
       });
-    }, 10000); // Simulate status change every 10 seconds
+    }, 8000); // Simulate status change every 8 seconds
 
     return () => clearInterval(interval);
-  }, [activeBooking]);
+  }, [activeBooking, onStatusChange]);
 
   if (!activeBooking) {
     return (
@@ -130,7 +145,7 @@ export function BookingStatus() {
               <div key={status} className="flex items-center gap-4">
                 <div
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full",
+                    "flex h-8 w-8 items-center justify-center rounded-full transition-colors",
                     isCompleted
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground",
@@ -147,9 +162,9 @@ export function BookingStatus() {
                 </div>
                 <span
                   className={cn(
-                    "font-medium",
+                    "font-medium transition-colors",
                     isCompleted && "text-muted-foreground line-through",
-                    isCurrent && "text-accent-foreground"
+                    isCurrent && "font-bold"
                   )}
                 >
                   {statusText[status]}
