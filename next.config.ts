@@ -36,6 +36,15 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  webpack: (config) => {
+    // Note: It's not recommended to ignore warnings in production.
+    // This is for demonstration purposes only.
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      /Critical dependency: the request of a dependency is an expression/,
+    ];
+    return config;
+  },
 };
 
 export default nextConfig;

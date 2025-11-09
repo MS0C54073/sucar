@@ -1,8 +1,9 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Map, { Marker } from 'react-map-gl';
+import React, { useState, useEffect, useRef } from "react";
+import Map, { Marker, Source, Layer, MapRef } from "react-map-gl";
+import mapboxgl from "mapbox-gl";
 import { Card } from "@/components/ui/card";
 import { Car, MapPin, Wrench } from "lucide-react";
 import {
@@ -39,21 +40,40 @@ interface SimulatedDriver extends Driver {
   user: typeof MOCK_USERS[0] | undefined;
 }
 
-// Function to interpolate between two points
-const interpolate = (start: Position, end: Position, factor: number): Position => {
-  return {
-    latitude: start.latitude + (end.latitude - start.latitude) * factor,
-    longitude: start.longitude + (end.longitude - start.longitude) * factor,
-  };
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+
+const routeLayer: mapboxgl.LineLayer = {
+  id: 'route',
+  type: 'line',
+  source: 'route',
+  layout: {
+    'line-join': 'round',
+    'line-cap': 'round'
+  },
+  paint: {
+    'line-color': '#3b82f6',
+    'line-width': 6,
+    'line-opacity': 0.8
+  }
 };
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+async function getRoute(start: Position, end: Position) {
+  if (!MAPBOX_TOKEN) return null;
+  const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start.longitude},${start.latitude};${end.longitude},${end.latitude}?steps=true&geometries=geojson&access_token=${MAPBOX_TOKEN}`;
+  const res = await fetch(url);
+  const json = await res.json();
+  const data = json.routes[0];
+  return data.geometry.coordinates;
+}
+
 
 export function MapView({ activeBooking }: { activeBooking?: Booking }) {
   const { user } = useAuth();
   const { drivers } = useBooking();
   const [simulatedDrivers, setSimulatedDrivers] = useState<SimulatedDriver[]>([]);
   const [assignedDriver, setAssignedDriver] = useState<SimulatedDriver | null>(null);
+  const [route, setRoute] = useState<any>(null);
+  const mapRef = useRef<MapRef>(null);
 
   // Initialize drivers
   useEffect(() => {
@@ -69,63 +89,79 @@ export function MapView({ activeBooking }: { activeBooking?: Booking }) {
       const assigned = allApprovedDrivers.find(d => d.driverId === activeBooking.driverId) || null;
       setAssignedDriver(assigned);
       setSimulatedDrivers(allApprovedDrivers.filter(d => d.driverId !== activeBooking.driverId));
+      if (assigned) {
+        mapRef.current?.flyTo({ center: [assigned.position.longitude, assigned.position.latitude], zoom: 14 });
+      }
     } else {
       setAssignedDriver(null);
       setSimulatedDrivers(allApprovedDrivers);
+      setRoute(null);
     }
   }, [user, activeBooking, drivers]);
 
 
-  // Simulation loop for driver movement
+  // Simulation loop for driver movement and route fetching
   useEffect(() => {
-    if (!activeBooking) return;
+    if (!activeBooking || !assignedDriver) {
+      setRoute(null);
+      return;
+    };
 
-    const interval = setInterval(() => {
+    let animationFrameId: number;
+    let routePoints: number[][] | null = null;
+    let routeIndex = 0;
+
+    const animate = async () => {
       const currentStatus = activeBooking.status;
+      let targetPosition: Position | null = null;
 
-      if (assignedDriver && currentStatus) {
-        setAssignedDriver(prevDriver => {
-          if (!prevDriver) return null;
-
-          let targetPosition = prevDriver.position;
-          let speed = 0.05;
-
-          switch (currentStatus) {
-            case 'requested':
-            case 'confirmed':
-                 targetPosition = USER_LOCATION;
-                 break;
-            case 'picked_up':
-            case 'in_wash':
-            case 'drying':
-                targetPosition = CAR_WASH_LOCATION;
-                break;
-            case 'done':
-                targetPosition = USER_LOCATION;
-                break;
-            case 'delivered':
-                targetPosition = USER_LOCATION;
-                break;
-          }
-          
-          const distance = Math.sqrt(Math.pow(targetPosition.latitude - prevDriver.position.latitude, 2) + Math.pow(targetPosition.longitude - prevDriver.position.longitude, 2));
-          if (distance < 0.0001) {
-              return {...prevDriver, position: targetPosition};
-          }
-
-          return {
-            ...prevDriver,
-            position: interpolate(prevDriver.position, targetPosition, speed),
-          };
-        });
+      switch (currentStatus) {
+        case 'requested':
+        case 'confirmed':
+             targetPosition = USER_LOCATION;
+             break;
+        case 'picked_up':
+        case 'in_wash':
+        case 'drying':
+            targetPosition = CAR_WASH_LOCATION;
+            break;
+        case 'done':
+            targetPosition = USER_LOCATION;
+            break;
       }
-
+      
+      if (targetPosition) {
+        // Fetch route if it's not available or target has changed
+        if (!routePoints) {
+            routePoints = await getRoute(assignedDriver.position, targetPosition);
+            if (routePoints) {
+                routeIndex = 0;
+                const routeGeoJSON = {
+                    type: 'Feature' as const,
+                    properties: {},
+                    geometry: {
+                        type: 'LineString' as const,
+                        coordinates: routePoints
+                    }
+                };
+                setRoute(routeGeoJSON);
+            }
+        }
+        
+        // Move driver along the route
+        if (routePoints && routeIndex < routePoints.length) {
+            const [longitude, latitude] = routePoints[routeIndex];
+            setAssignedDriver(prev => prev ? {...prev, position: { longitude, latitude }} : null);
+            routeIndex++;
+        }
+      }
+      
+      // Animate other drivers randomly
       setSimulatedDrivers((prevDrivers) =>
         prevDrivers.map((driver) => {
           if (driver.availability) {
-            const newLat = driver.position.latitude + (Math.random() - 0.5) * 0.005;
-            const newLon = driver.position.longitude + (Math.random() - 0.5) * 0.005;
-            
+            const newLat = driver.position.latitude + (Math.random() - 0.5) * 0.001;
+            const newLon = driver.position.longitude + (Math.random() - 0.5) * 0.001;
             return {
               ...driver,
               position: {
@@ -137,9 +173,13 @@ export function MapView({ activeBooking }: { activeBooking?: Booking }) {
           return driver;
         })
       );
-    }, 2000);
+      
+      animationFrameId = requestAnimationFrame(animate);
+    };
 
-    return () => clearInterval(interval);
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrameId);
   }, [assignedDriver, activeBooking]);
 
   const allDriversToDisplay = assignedDriver ? [...simulatedDrivers, assignedDriver] : simulatedDrivers;
@@ -149,7 +189,7 @@ export function MapView({ activeBooking }: { activeBooking?: Booking }) {
       <Card className="flex items-center justify-center w-full h-[400px] lg:h-[500px]">
         <div className="text-center">
           <p className="font-semibold">Mapbox Access Token Missing</p>
-          <p className="text-sm text-muted-foreground">Please add your token to the .env file.</p>
+          <p className="text-sm text-muted-foreground">Please set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN in .env</p>
         </div>
       </Card>
     );
@@ -158,14 +198,20 @@ export function MapView({ activeBooking }: { activeBooking?: Booking }) {
   return (
     <Card className="relative w-full h-[400px] lg:h-[500px] overflow-hidden rounded-lg">
       <Map
+        ref={mapRef}
         initialViewState={{
           longitude: USER_LOCATION.longitude,
           latitude: USER_LOCATION.latitude,
           zoom: 12
         }}
         mapboxAccessToken={MAPBOX_TOKEN}
-        mapStyle="mapbox://styles/mapbox/streets-v11"
+        mapStyle="mapbox://styles/mapbox/streets-v12"
       >
+        {route && (
+            <Source id="route" type="geojson" data={route}>
+                <Layer {...routeLayer} />
+            </Source>
+        )}
         <TooltipProvider>
             {allDriversToDisplay.map((driver) => (
             <Marker key={driver.driverId} longitude={driver.position.longitude} latitude={driver.position.latitude} anchor="bottom">
