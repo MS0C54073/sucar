@@ -43,7 +43,7 @@ export function RecentBookings() {
                 <p className="text-sm font-medium leading-none">{client?.name}</p>
                 <p className="text-sm text-muted-foreground">{booking.vehicle.make} {booking.vehicle.model}</p>
               </div>
-              <div className="ml-auto font-medium">+${booking.cost.toFixed(2)}</div>
+              <div className="ml-auto font-medium">+K{booking.cost.toFixed(2)}</div>
             </div>
           );
         })}

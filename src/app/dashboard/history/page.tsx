@@ -62,7 +62,7 @@ export default function HistoryPage() {
                     <Badge variant={booking.status === 'cancelled' ? 'destructive' : 'secondary'}>{booking.status}</Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    ${booking.cost.toFixed(2)}
+                    K{booking.cost.toFixed(2)}
                   </TableCell>
                    <TableCell className="text-right">
                     <Button variant="outline" size="sm">

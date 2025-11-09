@@ -176,7 +176,7 @@ export function BookingForm() {
                     <SelectContent>
                       {MOCK_SERVICES.map((service) => (
                         <SelectItem key={service.id} value={service.id}>
-                          {service.name} - ${service.price.toFixed(2)}
+                          {service.name} - K{service.price.toFixed(2)}
                         </SelectItem>
                       ))}
                     </SelectContent>

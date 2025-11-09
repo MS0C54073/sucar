@@ -49,7 +49,7 @@ export function ServicesTable() {
                 <TableCell className="font-medium">{service.name}</TableCell>
                 <TableCell>{service.description}</TableCell>
                 <TableCell className="text-right">
-                  ${service.price.toFixed(2)}
+                  K{service.price.toFixed(2)}
                 </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>

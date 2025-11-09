@@ -55,7 +55,7 @@ export default function MyBookingsPage() {
                             <TableCell>
                                 <Badge variant="outline">{booking.status.replace("_", " ")}</Badge>
                             </TableCell>
-                            <TableCell className="text-right">${booking.cost.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">K{booking.cost.toFixed(2)}</TableCell>
                         </TableRow>
                         ))}
                     </TableBody>

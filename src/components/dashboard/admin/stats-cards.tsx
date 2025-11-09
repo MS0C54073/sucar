@@ -9,7 +9,7 @@ import { DollarSign, BookOpen, UserCheck, Users } from "lucide-react";
 const stats = [
   {
     title: "Total Revenue",
-    value: "$45,231.89",
+    value: "K45,231.89",
     change: "+20.1% from last month",
     icon: <DollarSign className="h-5 w-5 text-muted-foreground" />,
   },

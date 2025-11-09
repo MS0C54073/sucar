@@ -149,11 +149,11 @@ export const MOCK_DRIVERS: Driver[] = [
 
 // Mock Services
 export const MOCK_SERVICES: Service[] = [
-    { id: 'service-01', name: 'Full Basic Wash', description: "Complete exterior and interior cleaning.", price: 25.00, durationMinutes: 45 },
-    { id: 'service-02', name: 'Engine Wash', description: "Degrease and clean the engine bay.", price: 40.00, durationMinutes: 60 },
-    { id: 'service-03', name: 'Exterior Wash', description: "Thorough wash and dry of the vehicle's exterior.", price: 15.00, durationMinutes: 30 },
-    { id: 'service-04', name: 'Interior Wash', description: "Vacuuming, dashboard cleaning, and window cleaning.", price: 20.00, durationMinutes: 40 },
-    { id: 'service-05', name: 'Wax and Polishing', description: "Application of wax for a protective, shiny finish.", price: 50.00, durationMinutes: 90 }
+    { id: 'service-01', name: 'Full Basic Wash', description: "Complete exterior and interior cleaning.", price: 150.00, durationMinutes: 45 },
+    { id: 'service-02', name: 'Engine Wash', description: "Degrease and clean the engine bay.", price: 250.00, durationMinutes: 60 },
+    { id: 'service-03', name: 'Exterior Wash', description: "Thorough wash and dry of the vehicle's exterior.", price: 100.00, durationMinutes: 30 },
+    { id: 'service-04', name: 'Interior Wash', description: "Vacuuming, dashboard cleaning, and window cleaning.", price: 120.00, durationMinutes: 40 },
+    { id: 'service-05', name: 'Wax and Polishing', description: "Application of wax for a protective, shiny finish.", price: 350.00, durationMinutes: 90 }
 ];
 
 // Mock Providers
@@ -180,7 +180,7 @@ export const MOCK_BOOKINGS: Booking[] = [
     vehicle: MOCK_VEHICLES[0],
     status: 'confirmed', // Starts at 'confirmed' for simulation
     createdAt: new Date(),
-    cost: 25.00,
+    cost: 150.00,
   },
   {
     bookingId: 'booking-02',
@@ -191,6 +191,6 @@ export const MOCK_BOOKINGS: Booking[] = [
     vehicle: MOCK_VEHICLES[1],
     status: 'picked_up',
     createdAt: new Date(Date.now() - 3600000),
-    cost: 15.00,
+    cost: 100.00,
   }
 ];
