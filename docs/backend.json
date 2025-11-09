@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -27,10 +28,6 @@
           "description": "The user's role in the system.",
           "enum": ["admin", "driver", "client", "provider"]
         },
-        "avatarUrl": {
-            "type": "string",
-            "description": "URL for the user's profile picture."
-        },
         "createdAt": {
           "type": "string",
           "description": "Timestamp indicating when the user account was created.",
@@ -39,18 +36,19 @@
       },
       "required": ["userId", "name", "email", "phone", "role", "createdAt"]
     },
-    "Car": {
-        "title": "Car",
+    "Vehicle": {
+        "title": "Vehicle",
         "type": "object",
         "description": "Represents a client's vehicle.",
         "properties": {
+            "vehicleId": {"type": "string"},
+            "clientId": {"type": "string"},
             "make": {"type": "string"},
             "model": {"type": "string"},
-            "year": {"type": "number"},
-            "color": {"type": "string"},
-            "plate": {"type": "string"}
+            "plate_no": {"type": "string"},
+            "color": {"type": "string"}
         },
-        "required": ["make", "model", "year", "color", "plate"]
+        "required": ["vehicleId", "clientId", "make", "model", "plate_no", "color"]
     },
     "Client": {
       "title": "Client",
@@ -64,11 +62,6 @@
         "nrcNumber": {
           "type": "string",
           "description": "The client's National Registration Card (NRC) number."
-        },
-        "cars": {
-          "type": "array",
-          "description": "An array of car details owned by the client.",
-          "items": { "$ref": "#/entities/Car" }
         }
       },
       "required": ["userId", "nrcNumber"]
@@ -82,14 +75,11 @@
           "type": "string",
           "description": "FK to User collection."
         },
+        "name": {"type": "string"},
+        "phone": {"type": "string"},
         "licenseNo": {
           "type": "string",
           "description": "The driver's license number."
-        },
-        "licenseExpiry": {
-          "type": "string",
-          "description": "The expiration date of the driver's license.",
-          "format": "date-time"
         },
         "address": {
           "type": "string",
@@ -110,9 +100,10 @@
                 "licenseUrl": {"type": "string"},
                 "proofOfAddressUrl": {"type": "string"}
             }
-        }
+        },
+        "approved": {"type": "boolean"}
       },
-      "required": ["userId", "licenseNo", "licenseExpiry", "address", "maritalStatus", "availability"]
+      "required": ["userId", "name", "phone", "licenseNo", "address", "maritalStatus", "availability", "approved"]
     },
     "Service": {
         "title": "Service",
@@ -165,37 +156,24 @@
       "type": "object",
       "description": "Represents a car wash booking.",
       "properties": {
+        "bookingId": { "type": "string" },
         "clientId": { "type": "string" },
-        "clientName": { "type": "string" },
         "driverId": { "type": "string" },
-        "driverName": { "type": "string" },
-        "providerId": { "type": "string" },
-        "providerName": { "type": "string" },
         "pickupLocation": { "type": "string" },
-        "carDetails": { "$ref": "#/entities/Car" },
-        "service": { "$ref": "#/entities/Service" },
         "status": {
           "type": "string",
-          "enum": ["requested", "picked_up", "in_wash", "drying", "done", "delivered", "cancelled"]
+          "enum": ["requested", "confirmed", "picked_up", "in_wash", "drying", "done", "delivered", "cancelled"]
         },
-        "timestamps": {
-            "type": "object",
-            "properties": {
-                "createdAt": {"type": "string", "format": "date-time"},
-                "updatedAt": {"type": "string", "format": "date-time"},
-                "pickupAt": {"type": "string", "format": "date-time"},
-                "deliveryAt": {"type": "string", "format": "date-time"}
-            }
-        },
-        "cost": {"type": "number"}
+        "createdAt": {"type": "string", "format": "date-time"}
       },
-      "required": ["clientId", "providerId", "pickupLocation", "carDetails", "service", "status", "timestamps", "cost"]
+      "required": ["bookingId", "clientId", "driverId", "pickupLocation", "status", "createdAt"]
     },
     "Payment": {
       "title": "Payment",
       "type": "object",
       "description": "Represents a payment for a booking.",
       "properties": {
+        "paymentId": { "type": "string" },
         "bookingId": { "type": "string" },
         "amount": { "type": "number" },
         "method": { 
@@ -211,7 +189,7 @@
           "format": "date-time"
         }
       },
-      "required": ["bookingId", "amount", "method", "status", "createdAt"]
+      "required": ["paymentId", "bookingId", "amount", "method", "status", "createdAt"]
     }
   },
   "auth": {
@@ -229,13 +207,17 @@
         "schema": { "$ref": "#/entities/Client" },
         "description": "Stores client-specific information."
     },
+    "/vehicles/{vehicleId}": {
+      "schema": { "$ref": "#/entities/Vehicle" },
+      "description": "Stores details about client vehicles."
+    },
     "/drivers/{driverId}": {
       "schema": { "$ref": "#/entities/Driver" },
-      "description": "Stores driver-specific information."
+      "description": "Stores driver-specific information, including approval status."
     },
     "/providers/{providerId}": {
       "schema": { "$ref": "#/entities/Provider" },
-      "description": "Stores car wash provider information."
+      "description": "Stores car wash provider information, including approval status."
     },
     "/bookings/{bookingId}": {
       "schema": { "$ref": "#/entities/Booking" },

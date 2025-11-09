@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -13,16 +14,32 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/auth-provider";
 import { Separator } from "@/components/ui/separator";
 import { Car, MapPin, Wrench } from "lucide-react";
-import { MOCK_BOOKINGS } from "@/lib/mock-data";
+import { MOCK_BOOKINGS, MOCK_DRIVERS } from "@/lib/mock-data";
 
 export function ActiveTrips() {
   const { user } = useAuth();
+  
+  const driverDetails = MOCK_DRIVERS.find(d => d.userId === user?.userId);
+
   const driverBookings = MOCK_BOOKINGS.filter(
     (b) =>
-      b.driverId === user?.userId &&
+      b.driverId === driverDetails?.driverId &&
       b.status !== "delivered" &&
       b.status !== "cancelled"
   );
+
+  if (!user || !driverDetails || !driverDetails.approved) {
+     return (
+      <Card className="text-center py-12">
+        <CardContent>
+          <h3 className="text-xl font-semibold">Account Pending Approval</h3>
+          <p className="text-muted-foreground mt-2">
+            Your account is currently under review by an administrator. You will be able to see trips once approved.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!driverBookings || driverBookings.length === 0) {
     return (
@@ -40,12 +57,12 @@ export function ActiveTrips() {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {driverBookings.map((booking) => (
-        <Card key={booking.id} className="flex flex-col">
+        <Card key={booking.bookingId} className="flex flex-col">
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
-                <CardTitle>Booking #{booking.id.slice(-6)}</CardTitle>
-                <CardDescription>Client: {booking.clientName}</CardDescription>
+                <CardTitle>Booking #{booking.bookingId.slice(-6)}</CardTitle>
+                <CardDescription>Client ID: {booking.clientId.slice(-6)}</CardDescription> 
               </div>
               <Badge
                 variant={booking.status === "picked_up" ? "secondary" : "default"}
@@ -64,13 +81,9 @@ export function ActiveTrips() {
               <div className="flex items-center gap-3">
                 <Car className="w-5 h-5 text-muted-foreground" />
                 <span>
-                  {booking.carDetails.year} {booking.carDetails.make}{" "}
-                  {booking.carDetails.model} ({booking.carDetails.plate})
+                  {booking.vehicle.make}{" "}
+                  {booking.vehicle.model} ({booking.vehicle.plate_no})
                 </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Wrench className="w-5 h-5 text-muted-foreground" />
-                <span>{booking.service.name}</span>
               </div>
             </div>
           </CardContent>

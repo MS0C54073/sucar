@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -32,15 +33,15 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Car, Send } from "lucide-react";
-import { MOCK_SERVICES } from "@/lib/mock-data";
+import { MOCK_SERVICES, MOCK_VEHICLES } from "@/lib/mock-data";
 import { Label } from "@/components/ui/label";
 
 const formSchema = z.object({
   bookingType: z.enum(["self-drive", "request-driver"], {
     required_error: "You need to select a booking type.",
   }),
-  car: z.string().min(1, { message: "Please select a car." }),
-  service: z.string().min(1, { message: "Please select a service." }),
+  vehicleId: z.string().min(1, { message: "Please select a car." }),
+  serviceId: z.string().min(1, { message: "Please select a service." }),
   pickupLocation: z
     .string()
     .min(5, { message: "Please enter a valid pickup address." }),
@@ -51,8 +52,8 @@ export function BookingForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       bookingType: "request-driver",
-      car: "ABC-123", // This should be dynamic based on user's cars
-      service: "",
+      vehicleId: "", 
+      serviceId: "",
       pickupLocation: "",
     },
   });
@@ -131,7 +132,7 @@ export function BookingForm() {
             />
             <FormField
               control={form.control}
-              name="car"
+              name="vehicleId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Your Car</FormLabel>
@@ -146,12 +147,11 @@ export function BookingForm() {
                     </FormControl>
                     <SelectContent>
                       {/* This should be populated from the user's cars in Firestore */}
-                      <SelectItem value="ABC-123">
-                        2021 Toyota Camry (ABC-123)
-                      </SelectItem>
-                      <SelectItem value="TRK-456">
-                        2020 Ford F-150 (TRK-456)
-                      </SelectItem>
+                      {MOCK_VEHICLES.map(car => (
+                        <SelectItem key={car.vehicleId} value={car.vehicleId}>
+                            {car.make} {car.model} ({car.plate_no})
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -160,7 +160,7 @@ export function BookingForm() {
             />
             <FormField
               control={form.control}
-              name="service"
+              name="serviceId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Service</FormLabel>

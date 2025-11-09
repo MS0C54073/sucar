@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -20,11 +21,11 @@ import {
   KeyRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { BookingStatus, Booking } from "@/lib/types";
+import type { BookingStatus as BookingStatusType, Booking } from "@/lib/types";
 import { MOCK_BOOKINGS } from "@/lib/mock-data";
 
 
-const allStatuses: BookingStatus[] = [
+const allStatuses: BookingStatusType[] = [
   "requested",
   "picked_up",
   "in_wash",
@@ -33,8 +34,9 @@ const allStatuses: BookingStatus[] = [
   "delivered",
 ];
 
-const statusIcons: Record<BookingStatus, React.ReactNode> = {
+const statusIcons: Record<BookingStatusType, React.ReactNode> = {
   requested: <CircleDashed />,
+  confirmed: <CheckCircle2 />,
   picked_up: <KeyRound />,
   in_wash: <Car />,
   drying: <Wind />,
@@ -43,8 +45,9 @@ const statusIcons: Record<BookingStatus, React.ReactNode> = {
   cancelled: <Circle />,
 };
 
-const statusText: Record<BookingStatus, string> = {
+const statusText: Record<BookingStatusType, string> = {
   requested: "Booking Requested",
+  confirmed: "Driver Confirmed",
   picked_up: "Car Picked Up",
   in_wash: "In Wash",
   drying: "Drying",
@@ -65,7 +68,7 @@ export function BookingStatus() {
   );
   
   const [currentStatus, setCurrentStatus] = useState<
-    BookingStatus | undefined
+    BookingStatusType | undefined
   >(activeBooking?.status);
 
   // This effect is for demo purposes to simulate status progression
@@ -111,10 +114,10 @@ export function BookingStatus() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Booking #{activeBooking.id.slice(-6)}</CardTitle>
+        <CardTitle>Booking #{activeBooking.bookingId.slice(-6)}</CardTitle>
         <CardDescription>
-          {activeBooking.carDetails.year} {activeBooking.carDetails.make}{" "}
-          {activeBooking.carDetails.model}
+          {activeBooking.vehicle.make}{" "}
+          {activeBooking.vehicle.model}
         </CardDescription>
       </CardHeader>
       <CardContent>

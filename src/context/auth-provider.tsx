@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { User, UserRole } from "@/lib/types";
@@ -47,14 +48,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signup = async (name: string, email: string, password: string, role: UserRole) => {
     setLoading(true);
     console.log("Signing up user:", { name, email, role });
-    // In a real app, you'd create a user. Here we just log in as a client.
-    const mockUser = MOCK_USERS.find((u) => u.role === 'client');
+    // In a real app, you'd create a user. Here we just log in as the chosen role.
+    const mockUser = MOCK_USERS.find((u) => u.role === role);
      if (mockUser) {
       setUser(mockUser);
       router.push("/dashboard");
     } else {
       setLoading(false);
-      throw new Error("No mock client user found for signup.");
+      throw new Error(`No mock user found for role: ${role}`);
     }
     setLoading(false);
   };

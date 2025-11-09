@@ -1,9 +1,11 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,10 +16,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import type { UserRole } from "@/lib/types";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -25,6 +35,9 @@ const formSchema = z.object({
   password: z
     .string()
     .min(6, { message: "Password must be at least 6 characters." }),
+  role: z.enum(["client", "driver", "provider"], {
+    required_error: "You must select a role.",
+  }),
 });
 
 export function SignUpForm() {
@@ -38,17 +51,28 @@ export function SignUpForm() {
       name: "",
       email: "",
       password: "",
+      role: "client",
     },
   });
+
+  const selectedRole = form.watch("role");
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await signup(values.name, values.email, values.password, "client");
-       toast({
-        title: "Verification Email Sent",
-        description: "Please check your inbox to verify your email address and complete registration.",
-      });
+      await signup(values.name, values.email, values.password, values.role);
+      
+      if (values.role === "client") {
+        toast({
+            title: "Account Created!",
+            description: "You have been successfully signed up. Redirecting...",
+        });
+      } else {
+        toast({
+            title: "Registration Submitted",
+            description: "Your account is pending approval from an administrator.",
+        });
+      }
       // The auth provider will redirect to the dashboard automatically
     } catch (error: any) {
       toast({
@@ -64,6 +88,29 @@ export function SignUpForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="role"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>I am a...</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="client">Client</SelectItem>
+                  <SelectItem value="driver">Driver</SelectItem>
+                  <SelectItem value="provider">Service Provider</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="name"

@@ -1,3 +1,4 @@
+
 import type { Timestamp } from "firebase/firestore";
 
 export type UserRole = "admin" | "driver" | "client" | "provider";
@@ -13,37 +14,38 @@ export interface User {
 }
 
 export interface Car {
+  vehicleId: string;
+  clientId: string;
   make: string;
   model: string;
-  year: number;
+  plate_no: string; // Changed from plate
   color: string;
-  plate: string;
 }
 
 export interface Client {
   clientId: string;
   userId: string;
   nrcNumber: string;
-  cars: Car[];
+  // cars are now a separate collection
 }
 
 export type MaritalStatus = "single" | "married" | "divorced" | "widowed";
 
 export interface Driver {
-  id: string;
   driverId: string;
   userId: string;
-  name: string;
+  name: string; // Duplicated for easy access
+  phone: string;
   licenseNo: string;
-  licenseExpiry: Date;
   address: string;
   maritalStatus: MaritalStatus;
   availability: boolean;
   documents: {
-    nrcUrl: string;
-    licenseUrl: string;
-    proofOfAddressUrl: string;
+    nrcUrl?: string;
+    licenseUrl?: string;
+    proofOfAddressUrl?: string;
   };
+  approved: boolean; // For admin approval
 }
 
 export interface Service {
@@ -61,37 +63,29 @@ export interface Provider {
   location: string;
   baysCount: number;
   services: Service[];
-  approved: boolean;
+  approved: boolean; // For admin approval
 }
 
 export type BookingStatus =
   | "requested"
+  | "confirmed" // Driver has accepted
   | "picked_up"
   | "in_wash"
   | "drying"
-  | "done"
+  | "done" // Wash complete, ready for delivery
   | "delivered"
   | "cancelled";
 
 export interface Booking {
-  id: string;
   bookingId: string;
   clientId: string;
-  clientName: string;
-  driverId?: string;
-  driverName?: string;
-  providerId: string;
-  providerName: string;
+  driverId: string;
   pickupLocation: string;
-  carDetails: Car;
-  service: Service;
   status: BookingStatus;
-  timestamps: {
-    createdAt: Date;
-    updatedAt: Date;
-    pickupAt?: Date;
-    deliveryAt?: Date;
-  };
+  createdAt: Date;
+  // Other fields from spec to be added later
+  vehicle: Car;
+  providerId: string;
   cost: number;
 }
 

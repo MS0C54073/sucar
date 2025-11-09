@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -31,7 +32,7 @@ export function RecentBookings() {
         {recentBookings.map((booking) => {
           const client = MOCK_USERS.find((u) => u.userId === booking.clientId);
           return (
-            <div key={booking.id} className="flex items-center gap-4">
+            <div key={booking.bookingId} className="flex items-center gap-4">
               <Avatar className="hidden h-9 w-9 sm:flex">
                 <AvatarImage src={client?.avatarUrl} alt="Avatar" />
                 <AvatarFallback>

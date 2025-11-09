@@ -1,4 +1,5 @@
-import type { User, Driver, Client, Provider, Booking, Service } from './types';
+
+import type { User, Driver, Client, Provider, Booking, Service, Car } from './types';
 
 // Mock Users
 export const MOCK_USERS: User[] = [
@@ -55,22 +56,22 @@ export const MOCK_CLIENTS: Client[] = [
     clientId: 'client-01-data',
     userId: 'client-01',
     nrcNumber: '123456/78/9',
-    cars: [
-      { make: 'Toyota', model: 'Corolla', year: 2020, color: 'Silver', plate: 'ABC 123' },
-      { make: 'Ford', model: 'Ranger', year: 2021, color: 'Blue', plate: 'DEF 456' },
-    ],
   },
+];
+
+export const MOCK_VEHICLES: Car[] = [
+    { vehicleId: 'veh-01', clientId: 'client-01', make: 'Toyota', model: 'Mark X', plate_no: 'BLB57', color: 'Black' },
+    { vehicleId: 'veh-02', clientId: 'client-01', make: 'Ford', model: 'Ranger', plate_no: 'DEF 456', color: 'Blue' },
 ];
 
 // Mock Drivers
 export const MOCK_DRIVERS: Driver[] = [
   {
-    id: 'driver-01-data',
     driverId: 'driver-01-data',
     userId: 'driver-01',
     name: "Bob Williams",
+    phone: '777-888-9999',
     licenseNo: 'DL123456',
-    licenseExpiry: new Date('2025-12-31'),
     address: '123 Main St, Anytown',
     maritalStatus: 'single',
     availability: true,
@@ -78,23 +79,20 @@ export const MOCK_DRIVERS: Driver[] = [
         nrcUrl: 'http://example.com/nrc.pdf',
         licenseUrl: 'http://example.com/license.pdf',
         proofOfAddressUrl: 'http://example.com/utility.pdf'
-    }
+    },
+    approved: true
   },
   {
-    id: 'driver-02-data',
     driverId: 'driver-02-data',
     userId: 'driver-02',
     name: "Samantha Jones",
+    phone: '222-333-4444',
     licenseNo: 'DL654321',
-    licenseExpiry: new Date('2026-10-20'),
     address: '456 Oak Ave, Otherville',
     maritalStatus: 'married',
     availability: false,
-    documents: {
-        nrcUrl: 'http://example.com/nrc.pdf',
-        licenseUrl: 'http://example.com/license.pdf',
-        proofOfAddressUrl: 'http://example.com/utility.pdf'
-    }
+     documents: {},
+    approved: false // Pending approval
   }
 ];
 
@@ -123,35 +121,25 @@ export const MOCK_PROVIDERS: Provider[] = [
 // Mock Bookings
 export const MOCK_BOOKINGS: Booking[] = [
   {
-    id: 'booking-01',
     bookingId: 'booking-01',
     clientId: 'client-01',
-    clientName: 'Alice Johnson',
     driverId: 'driver-01',
-    driverName: 'Bob Williams',
     providerId: 'provider-01',
-    providerName: 'SparkleClean Wash',
     pickupLocation: '123 Client Ave',
-    carDetails: { make: 'Toyota', model: 'Corolla', year: 2020, color: 'Silver', plate: 'ABC 123' },
-    service: MOCK_SERVICES[0],
+    vehicle: MOCK_VEHICLES[0],
     status: 'in_wash',
-    timestamps: { createdAt: new Date(), updatedAt: new Date() },
+    createdAt: new Date(),
     cost: 25.00,
   },
   {
-    id: 'booking-02',
     bookingId: 'booking-02',
     clientId: 'client-02',
-    clientName: 'Charlie Brown',
     driverId: 'driver-01',
-    driverName: 'Bob Williams',
     providerId: 'provider-01',
-    providerName: 'SparkleClean Wash',
     pickupLocation: '456 Client Rd',
-    carDetails: { make: 'Honda', model: 'Civic', year: 2022, color: 'Red', plate: 'XYZ 789' },
-    service: MOCK_SERVICES[2],
+    vehicle: MOCK_VEHICLES[1],
     status: 'picked_up',
-    timestamps: { createdAt: new Date(Date.now() - 3600000), updatedAt: new Date() },
+    createdAt: new Date(Date.now() - 3600000),
     cost: 15.00,
   }
 ];
