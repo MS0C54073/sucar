@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -20,11 +21,19 @@ import { Separator } from "@/components/ui/separator";
 import type { UserRole } from "@/lib/types";
 import { Car, Shield, Wrench, UserCog, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { MOCK_USERS } from "@/lib/mock-data";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
 });
+
+const roleIcons: Record<UserRole, React.ReactNode> = {
+  admin: <UserCog className="mr-2" />,
+  client: <Car className="mr-2" />,
+  driver: <Shield className="mr-2" />,
+  provider: <Wrench className="mr-2" />,
+};
 
 export function LoginForm() {
   const { login } = useAuth();
@@ -43,8 +52,7 @@ export function LoginForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      // Assuming a default role of 'client' for email/password login
-      // You might want a role selection dropdown for this form too.
+      // Hardcoded to client for the form submission
       await login("client", values.email, values.password);
     } catch (error: any) {
       toast({
@@ -74,28 +82,32 @@ export function LoginForm() {
 
   return (
     <div>
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="space-y-3 mb-6">
         {(["admin", "client", "driver", "provider"] as UserRole[]).map(
-          (role) => (
-            <Button
-              key={role}
-              variant="outline"
-              onClick={() => handleRoleLogin(role)}
-              disabled={!!roleLoading}
-            >
-              {roleLoading === role ? (
-                <Loader2 className="mr-2 animate-spin" />
-              ) : (
-                <>
-                  {role === "admin" && <UserCog className="mr-2" />}
-                  {role === "client" && <Car className="mr-2" />}
-                  {role === "driver" && <Shield className="mr-2" />}
-                  {role === "provider" && <Wrench className="mr-2" />}
-                </>
-              )}
-              {role.charAt(0).toUpperCase() + role.slice(1)}
-            </Button>
-          )
+          (role) => {
+            const mockUser = MOCK_USERS.find(u => u.role === role);
+            return (
+              <Button
+                key={role}
+                variant="outline"
+                className="w-full justify-start h-12"
+                onClick={() => handleRoleLogin(role)}
+                disabled={!!roleLoading}
+              >
+                {roleLoading === role ? (
+                  <Loader2 className="mr-2 animate-spin" />
+                ) : (
+                  roleIcons[role]
+                )}
+                <div className="text-left">
+                  <p className="font-bold">
+                    Login as {role.charAt(0).toUpperCase() + role.slice(1)}
+                  </p>
+                  <p className="text-xs text-muted-foreground -mt-0.5">{mockUser?.email}</p>
+                </div>
+              </Button>
+            )
+          }
         )}
       </div>
 
@@ -108,38 +120,42 @@ export function LoginForm() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="name@example.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Login as Client
-          </Button>
+          <fieldset disabled>
+            <p className="text-sm text-center text-muted-foreground mb-4">The form below is for demonstration purposes.</p>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="name@example.com" {...field} defaultValue="client@sucar.com" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} defaultValue="password" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full mt-4" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Login as Client
+            </Button>
+          </fieldset>
         </form>
       </Form>
     </div>
   );
 }
+
