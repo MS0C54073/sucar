@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -35,13 +36,16 @@ export function ProfileForm() {
   const { user } = useAuth();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    // Set defaultValues directly from the user object.
+    // The `|| ''` ensures the values are never null or undefined, preventing uncontrolled/controlled errors.
     defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
+      name: user?.name || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
     },
   });
 
+  // This useEffect will re-sync the form if the user object changes after initial render.
   useEffect(() => {
     if (user) {
       form.reset({
@@ -119,3 +123,4 @@ export function ProfileForm() {
     </Card>
   );
 }
+
