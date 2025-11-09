@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -12,6 +13,9 @@ import {
   Route,
   LogOut,
   Settings,
+  Bell,
+  History,
+  PlusCircle,
 } from "lucide-react";
 
 import {
@@ -49,8 +53,11 @@ export function SidebarContent() {
   ];
 
   const clientNav = [
-    { href: "/dashboard/client", label: "New Booking", icon: Car },
+    { href: "/dashboard/client", label: "Dashboard", icon: LayoutDashboard },
     { href: "/dashboard/my-bookings", label: "My Bookings", icon: Book },
+    { href: "/dashboard/new-booking", label: "New Booking", icon: PlusCircle },
+    { href: "/dashboard/history", label: "History", icon: History },
+    { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   ];
 
   const driverNav = [
