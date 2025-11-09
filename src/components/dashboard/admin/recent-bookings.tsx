@@ -25,7 +25,7 @@ export function RecentBookings() {
       <CardHeader>
         <CardTitle>Recent Bookings</CardTitle>
         <CardDescription>
-          The latest 5 bookings across the platform.
+          The latest {recentBookings.length} bookings across the platform.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6">
@@ -41,7 +41,7 @@ export function RecentBookings() {
               </Avatar>
               <div className="grid gap-1">
                 <p className="text-sm font-medium leading-none">{client?.name}</p>
-                <p className="text-sm text-muted-foreground">{client?.email}</p>
+                <p className="text-sm text-muted-foreground">{booking.vehicle.make} {booking.vehicle.model}</p>
               </div>
               <div className="ml-auto font-medium">+${booking.cost.toFixed(2)}</div>
             </div>

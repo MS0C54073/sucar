@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
-import { Car, MapPin } from "lucide-react";
+import { Car, MapPin, Wrench } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -21,12 +21,12 @@ const USER_LOCATION = { top: 50, left: 50 };
 const CAR_WASH_LOCATION = { top: 20, left: 80 };
 
 // Pre-defined initial positions for drivers
-const initialDriverPositions = [
-  { top: 35, left: 55 },
-  { top: 60, left: 40 },
-  { top: 25, left: 30 },
-  { top: 75, left: 70 },
-];
+const initialDriverPositions: Record<string, { top: number; left: number }> = {
+  "driver-01-data": { top: 60, left: 40 },
+  "driver-02-data": { top: 25, left: 30 },
+  "driver-03-data": { top: 35, left: 55 }, // Added more drivers for a fuller map
+  "driver-04-data": { top: 75, left: 70 },
+};
 
 interface Position {
   top: number;
@@ -61,27 +61,33 @@ export function MapView({ currentStatus }: { currentStatus?: BookingStatusType }
 
   // Initialize drivers
   useEffect(() => {
-    const driversToSimulate = MOCK_DRIVERS
+    // Show all approved drivers on the map
+    const allApprovedDrivers = MOCK_DRIVERS
       .filter(d => d.approved)
-      .slice(0, initialDriverPositions.length)
-      .map((driver, index) => ({
+      .map((driver) => ({
         ...driver,
-        position: initialDriverPositions[index % initialDriverPositions.length],
+        position: initialDriverPositions[driver.driverId] || { top: Math.random() * 80 + 10, left: Math.random() * 80 + 10 },
         user: MOCK_USERS.find((u) => u.userId === driver.userId),
       }));
 
     if (activeBooking) {
-      const assigned = driversToSimulate[1]; // Assign the second driver for demo
+      // Find the driver assigned to the active booking
+      const assigned = allApprovedDrivers.find(d => d.driverId === activeBooking.driverId) || null;
       setAssignedDriver(assigned);
-      setSimulatedDrivers(driversToSimulate.filter(d => d.driverId !== assigned.driverId));
+      // Other drivers are those who are not assigned
+      setSimulatedDrivers(allApprovedDrivers.filter(d => d.driverId !== activeBooking.driverId));
     } else {
-      setSimulatedDrivers(driversToSimulate);
+      // If no active booking, all approved drivers are just simulated
+      setAssignedDriver(null);
+      setSimulatedDrivers(allApprovedDrivers);
     }
   }, [user, activeBooking]);
 
 
   // Simulation loop for driver movement
   useEffect(() => {
+    if (!activeBooking) return; // Only simulate movement if there is an active booking
+
     const interval = setInterval(() => {
       // Animate assigned driver based on booking status
       if (assignedDriver && currentStatus) {
@@ -126,7 +132,7 @@ export function MapView({ currentStatus }: { currentStatus?: BookingStatusType }
         });
       }
 
-      // Animate other drivers randomly
+      // Animate other drivers randomly to show they are active
       setSimulatedDrivers((prevDrivers) =>
         prevDrivers.map((driver) => {
           const newTop = driver.position.top + (Math.random() - 0.5) * 2;
@@ -146,15 +152,15 @@ export function MapView({ currentStatus }: { currentStatus?: BookingStatusType }
     }, 2000); // Update every 2 seconds
 
     return () => clearInterval(interval);
-  }, [assignedDriver, currentStatus]);
+  }, [assignedDriver, currentStatus, activeBooking]);
 
-  const allDrivers = assignedDriver ? [...simulatedDrivers, assignedDriver] : simulatedDrivers;
+  const allDriversToDisplay = assignedDriver ? [...simulatedDrivers, assignedDriver] : simulatedDrivers;
 
   return (
     <Card className="relative w-full h-[400px] lg:h-[500px] overflow-hidden">
       <Image
-        src="https://picsum.photos/seed/lusaka-map-2/1200/800"
-        alt="A Google Maps style satellite view of Lusaka showing nearby drivers"
+        src="https://picsum.photos/seed/lusaka-map-3/1200/800"
+        alt="A satellite map of Lusaka showing nearby drivers"
         fill
         className="object-cover"
         data-ai-hint="satellite map"
@@ -162,7 +168,7 @@ export function MapView({ currentStatus }: { currentStatus?: BookingStatusType }
       <div className="absolute inset-0 bg-black/10" />
 
       <TooltipProvider>
-        {allDrivers.map((driver) => (
+        {allDriversToDisplay.map((driver) => (
           <Tooltip key={driver.driverId}>
             <TooltipTrigger asChild>
               <div

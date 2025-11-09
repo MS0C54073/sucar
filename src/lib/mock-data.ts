@@ -47,7 +47,34 @@ export const MOCK_USERS: User[] = [
     role: 'client',
     avatarUrl: 'https://picsum.photos/seed/client-02/100/100',
     createdAt: new Date('2023-05-20'),
-  }
+  },
+  {
+    userId: 'driver-02', // Added for Samantha
+    name: 'Samantha Jones',
+    email: 'samantha@sucar.com',
+    phone: '222-333-4444',
+    role: 'driver',
+    avatarUrl: 'https://picsum.photos/seed/driver-02/100/100',
+    createdAt: new Date('2023-06-01'),
+  },
+  {
+    userId: 'driver-03', // Added for third driver
+    name: 'Peter Pan',
+    email: 'peter@sucar.com',
+    phone: '333-444-5555',
+    role: 'driver',
+    avatarUrl: 'https://picsum.photos/seed/driver-03/100/100',
+    createdAt: new Date('2023-07-01'),
+  },
+  {
+    userId: 'driver-04', // Added for fourth driver
+    name: 'Wendy Darling',
+    email: 'wendy@sucar.com',
+    phone: '444-555-6666',
+    role: 'driver',
+    avatarUrl: 'https://picsum.photos/seed/driver-04/100/100',
+    createdAt: new Date('2023-08-01'),
+  },
 ];
 
 // Mock Clients
@@ -61,7 +88,7 @@ export const MOCK_CLIENTS: Client[] = [
 
 export const MOCK_VEHICLES: Car[] = [
     { vehicleId: 'veh-01', clientId: 'client-01', make: 'Toyota', model: 'Mark X', plate_no: 'BLB57', color: 'Black' },
-    { vehicleId: 'veh-02', clientId: 'client-01', make: 'Ford', model: 'Ranger', plate_no: 'DEF 456', color: 'Blue' },
+    { vehicleId: 'veh-02', clientId: 'client-02', make: 'Ford', model: 'Ranger', plate_no: 'DEF 456', color: 'Blue' },
 ];
 
 // Mock Drivers
@@ -92,8 +119,32 @@ export const MOCK_DRIVERS: Driver[] = [
     maritalStatus: 'married',
     availability: false,
      documents: {},
-    approved: false // Pending approval
-  }
+    approved: true // Approved for map visibility
+  },
+  {
+    driverId: 'driver-03-data',
+    userId: 'driver-03',
+    name: "Peter Pan",
+    phone: '333-444-5555',
+    licenseNo: 'DL789012',
+    address: '789 Pine St, Neverland',
+    maritalStatus: 'single',
+    availability: true,
+    documents: {},
+    approved: true,
+  },
+  {
+    driverId: 'driver-04-data',
+    userId: 'driver-04',
+    name: 'Wendy Darling',
+    phone: '444-555-6666',
+    licenseNo: 'DL345678',
+    address: '101 Star Ave, London',
+    maritalStatus: 'single',
+    availability: false,
+    documents: {},
+    approved: false, // Not approved, won't show on map
+  },
 ];
 
 // Mock Services
@@ -122,19 +173,19 @@ export const MOCK_PROVIDERS: Provider[] = [
 export const MOCK_BOOKINGS: Booking[] = [
   {
     bookingId: 'booking-01',
-    clientId: 'client-01',
-    driverId: 'driver-01',
+    clientId: 'client-01', // Alice Johnson
+    driverId: 'driver-01-data', // Bob Williams
     providerId: 'provider-01',
     pickupLocation: '123 Client Ave',
     vehicle: MOCK_VEHICLES[0],
-    status: 'in_wash',
+    status: 'confirmed', // Starts at 'confirmed' for simulation
     createdAt: new Date(),
     cost: 25.00,
   },
   {
     bookingId: 'booking-02',
-    clientId: 'client-02',
-    driverId: 'driver-01',
+    clientId: 'client-02', // Charlie Brown
+    driverId: 'driver-01-data', // Bob Williams
     providerId: 'provider-01',
     pickupLocation: '456 Client Rd',
     vehicle: MOCK_VEHICLES[1],
