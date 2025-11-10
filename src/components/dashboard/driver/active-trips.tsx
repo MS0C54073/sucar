@@ -36,8 +36,8 @@ const getNextStatusText = (status: BookingStatus): string => {
         case "confirmed": return "Confirm Pickup";
         case "picked_up": return "Arrived at Car Wash";
         case "in_wash": return "Mark as Drying";
-        case "drying": return "Mark as Ready";
-        case "done": return "Confirm Delivery";
+        case "drying": return "Mark as Ready for Delivery";
+        case "done": return "Confirm Delivery to Client";
         default: return "Update Status";
     }
 }
@@ -129,6 +129,7 @@ export function ActiveTrips() {
                 </div>
                 <Badge
                     variant={"outline"}
+                    className="capitalize"
                 >
                     {booking.status.replace("_", " ")}
                 </Badge>

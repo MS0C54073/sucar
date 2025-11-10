@@ -77,6 +77,24 @@ export function BookingStatus({ activeBooking }: BookingStatusProps) {
   const currentStatus = activeBooking.status;
   const currentIndex = currentStatus ? allStatuses.indexOf(currentStatus) : -1;
 
+  if (activeBooking.status === "cancelled") {
+    return (
+       <Card>
+        <CardHeader>
+          <CardTitle>Booking #{activeBooking.bookingId.slice(-6)}</CardTitle>
+          <CardDescription>
+            This booking has been cancelled.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center flex-col text-center h-48">
+            <Circle className="h-12 w-12 text-destructive" />
+            <p className="mt-4 font-bold text-destructive">Booking Cancelled</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+
   return (
     <Card>
       <CardHeader>
@@ -89,7 +107,7 @@ export function BookingStatus({ activeBooking }: BookingStatusProps) {
       <CardContent>
         <div className="space-y-6">
           {allStatuses.map((status, index) => {
-            const isCompleted = index < currentIndex;
+            const isCompleted = currentIndex > -1 && index < currentIndex;
             const isCurrent = index === currentIndex;
 
             return (
@@ -115,7 +133,7 @@ export function BookingStatus({ activeBooking }: BookingStatusProps) {
                   className={cn(
                     "font-medium transition-colors",
                     isCompleted && "text-muted-foreground line-through",
-                    isCurrent && "font-bold"
+                    isCurrent && "font-bold text-accent-foreground"
                   )}
                 >
                   {statusText[status]}

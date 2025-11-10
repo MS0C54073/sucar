@@ -84,11 +84,18 @@ export const MOCK_CLIENTS: Client[] = [
     userId: 'client-01',
     nrcNumber: '123456/78/9',
   },
+  {
+    clientId: 'client-02-data',
+    userId: 'client-02',
+    nrcNumber: '987654/32/1',
+  }
 ];
 
 export const MOCK_VEHICLES: Car[] = [
-    { vehicleId: 'veh-01', clientId: 'client-01', make: 'Toyota', model: 'Mark X', plate_no: 'BLB57', color: 'Black' },
-    { vehicleId: 'veh-02', clientId: 'client-02', make: 'Ford', model: 'Ranger', plate_no: 'DEF 456', color: 'Blue' },
+    { vehicleId: 'veh-01', clientId: 'client-01', make: 'Toyota', model: 'Mark X', plate_no: 'BLB 57', color: 'Black' },
+    { vehicleId: 'veh-02', clientId: 'client-01', make: 'BMW', model: 'X5', plate_no: 'BCA 123', color: 'White' },
+    { vehicleId: 'veh-03', clientId: 'client-02', make: 'Ford', model: 'Ranger', plate_no: 'DEF 456', color: 'Blue' },
+    { vehicleId: 'veh-04', clientId: 'client-02', make: 'Mercedes-Benz', model: 'C-Class', plate_no: 'GHI 789', color: 'Silver' },
 ];
 
 // Mock Drivers
@@ -176,7 +183,7 @@ export const MOCK_BOOKINGS: Booking[] = [
     clientId: 'client-01', // Alice Johnson
     driverId: 'driver-01-data', // Bob Williams
     providerId: 'provider-01',
-    pickupLocation: '123 Client Ave',
+    pickupLocation: 'Acacia Park, Lusaka',
     vehicle: MOCK_VEHICLES[0],
     status: 'confirmed', // Starts at 'confirmed' for simulation
     createdAt: new Date(),
@@ -185,12 +192,45 @@ export const MOCK_BOOKINGS: Booking[] = [
   {
     bookingId: 'booking-02',
     clientId: 'client-02', // Charlie Brown
-    driverId: 'driver-01-data', // Bob Williams
+    driverId: 'driver-02-data', // Samantha Jones
     providerId: 'provider-01',
-    pickupLocation: '456 Client Rd',
-    vehicle: MOCK_VEHICLES[1],
+    pickupLocation: 'Manda Hill, Lusaka',
+    vehicle: MOCK_VEHICLES[2],
     status: 'picked_up',
     createdAt: new Date(Date.now() - 3600000),
     cost: 100.00,
-  }
+  },
+  {
+    bookingId: 'booking-03',
+    clientId: 'client-01', // Alice Johnson
+    driverId: 'driver-03-data', // Peter Pan
+    providerId: 'provider-01',
+    pickupLocation: 'East Park Mall, Lusaka',
+    vehicle: MOCK_VEHICLES[1],
+    status: 'requested',
+    createdAt: new Date(Date.now() - 86400000 * 2), // 2 days ago
+    cost: 350.00,
+  },
+  {
+    bookingId: 'booking-04',
+    clientId: 'client-02', // Charlie Brown
+    driverId: 'driver-01-data', // Bob Williams
+    providerId: 'provider-01',
+    pickupLocation: 'Levy Junction, Lusaka',
+    vehicle: MOCK_VEHICLES[3],
+    status: 'delivered',
+    createdAt: new Date(Date.now() - 86400000 * 5), // 5 days ago
+    cost: 250.00,
+  },
+    {
+    bookingId: 'booking-05',
+    clientId: 'client-01', // Alice Johnson
+    driverId: 'driver-02-data', // Samantha Jones
+    providerId: 'provider-01',
+    pickupLocation: 'Arcades, Lusaka',
+    vehicle: MOCK_VEHICLES[0],
+    status: 'cancelled',
+    createdAt: new Date(Date.now() - 86400000 * 3), // 3 days ago
+    cost: 150.00,
+  },
 ];
