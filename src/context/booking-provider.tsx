@@ -15,12 +15,38 @@ import {
 } from "@/lib/mock-data";
 import type { Booking, BookingStatus, Driver, User } from "@/lib/types";
 
+// The Finite State Machine for booking status progression.
+// This is the SINGLE SOURCE OF TRUTH for status transitions.
+const statusProgression: Record<BookingStatus, BookingStatus | null> = {
+  requested: "confirmed",
+  confirmed: "picked_up",
+  picked_up: "in_wash",
+  in_wash: "drying",
+  drying: "done",
+  done: "delivered",
+  delivered: null,
+  cancelled: null,
+};
+
+// Defines the button text for the next action a driver can take.
+const nextStatusButtonText: Partial<Record<BookingStatus, string>> = {
+    requested: "Accept Job",
+    confirmed: "Confirm Pickup",
+    picked_up: "Arrived at Car Wash",
+    in_wash: "Mark as Drying",
+    drying: "Mark as Ready for Delivery",
+    done: "Confirm Delivery to Client",
+};
+
+
 interface BookingContextType {
   bookings: Booking[];
   drivers: Driver[];
   users: User[];
   updateBookingStatus: (bookingId: string, newStatus: BookingStatus) => void;
   setBookings: React.Dispatch<SetStateAction<Booking[]>>;
+  getNextStatus: (currentStatus: BookingStatus) => BookingStatus | null;
+  getNextStatusText: (currentStatus: BookingStatus) => string;
 }
 
 const BookingContext = createContext<BookingContextType | undefined>(
@@ -42,12 +68,22 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  const getNextStatus = (currentStatus: BookingStatus) => {
+    return statusProgression[currentStatus];
+  };
+
+  const getNextStatusText = (currentStatus: BookingStatus) => {
+    return nextStatusButtonText[currentStatus] || "Update Status";
+  }
+
   const value = {
     bookings,
     drivers,
     users,
     updateBookingStatus,
     setBookings,
+    getNextStatus,
+    getNextStatusText,
   };
 
   return (

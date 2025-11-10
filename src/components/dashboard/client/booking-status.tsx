@@ -44,7 +44,7 @@ const statusIcons: Record<BookingStatusType, React.ReactNode> = {
   cancelled: <Circle />,
 };
 
-const statusText: Record<BookingStatusType, string> = {
+export const statusText: Record<BookingStatusType, string> = {
   requested: "Booking Requested",
   confirmed: "Driver Confirmed",
   picked_up: "Car Picked Up",
@@ -107,7 +107,7 @@ export function BookingStatus({ activeBooking }: BookingStatusProps) {
       <CardContent>
         <div className="space-y-6">
           {allStatuses.map((status, index) => {
-            const isCompleted = currentIndex > -1 && index < currentIndex;
+            const isCompleted = currentIndex > index;
             const isCurrent = index === currentIndex;
 
             return (
@@ -133,7 +133,7 @@ export function BookingStatus({ activeBooking }: BookingStatusProps) {
                   className={cn(
                     "font-medium transition-colors",
                     isCompleted && "text-muted-foreground line-through",
-                    isCurrent && "font-bold text-accent-foreground"
+                    isCurrent && "font-bold text-accent"
                   )}
                 >
                   {statusText[status]}

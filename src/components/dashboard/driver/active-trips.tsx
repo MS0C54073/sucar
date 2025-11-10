@@ -18,33 +18,11 @@ import { Car, MapPin, User as UserIcon } from "lucide-react";
 import { MOCK_USERS } from "@/lib/mock-data";
 import type { BookingStatus } from "@/lib/types";
 import { toast } from "@/hooks/use-toast";
-
-const statusProgression: Record<BookingStatus, BookingStatus | null> = {
-  requested: "confirmed",
-  confirmed: "picked_up",
-  picked_up: "in_wash",
-  in_wash: "drying",
-  drying: "done",
-  done: "delivered",
-  delivered: null,
-  cancelled: null,
-};
-
-const getNextStatusText = (status: BookingStatus): string => {
-    switch (status) {
-        case "requested": return "Accept Job";
-        case "confirmed": return "Confirm Pickup";
-        case "picked_up": return "Arrived at Car Wash";
-        case "in_wash": return "Mark as Drying";
-        case "drying": return "Mark as Ready for Delivery";
-        case "done": return "Confirm Delivery to Client";
-        default: return "Update Status";
-    }
-}
+import { statusText } from "@/components/dashboard/client/booking-status";
 
 export function ActiveTrips() {
   const { user } = useAuth();
-  const { bookings, drivers, updateBookingStatus } = useBooking();
+  const { bookings, drivers, updateBookingStatus, getNextStatus, getNextStatusText } = useBooking();
   
   const driverDetails = drivers.find(d => d.userId === user?.userId);
 
@@ -56,12 +34,12 @@ export function ActiveTrips() {
   );
 
   const handleUpdateStatus = (bookingId: string, currentStatus: BookingStatus) => {
-    const nextStatus = statusProgression[currentStatus];
+    const nextStatus = getNextStatus(currentStatus);
     if (nextStatus) {
       updateBookingStatus(bookingId, nextStatus);
       toast({
         title: "Status Updated!",
-        description: `Booking status changed to "${nextStatus.replace("_", " ")}".`
+        description: `Booking status changed to "${statusText[nextStatus]}".`
       })
     } else {
         toast({
@@ -131,7 +109,7 @@ export function ActiveTrips() {
                     variant={"outline"}
                     className="capitalize"
                 >
-                    {booking.status.replace("_", " ")}
+                    {statusText[booking.status]}
                 </Badge>
                 </div>
             </CardHeader>

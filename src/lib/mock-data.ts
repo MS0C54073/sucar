@@ -185,7 +185,7 @@ export const MOCK_BOOKINGS: Booking[] = [
     providerId: 'provider-01',
     pickupLocation: 'Acacia Park, Lusaka',
     vehicle: MOCK_VEHICLES[0],
-    status: 'confirmed', // Starts at 'confirmed' for simulation
+    status: 'confirmed', // Start at confirmed to be active for a driver
     createdAt: new Date(),
     cost: 150.00,
   },
@@ -207,7 +207,7 @@ export const MOCK_BOOKINGS: Booking[] = [
     providerId: 'provider-01',
     pickupLocation: 'East Park Mall, Lusaka',
     vehicle: MOCK_VEHICLES[1],
-    status: 'requested',
+    status: 'requested', // This will be an available job for a driver to accept
     createdAt: new Date(Date.now() - 86400000 * 2), // 2 days ago
     cost: 350.00,
   },
@@ -218,7 +218,7 @@ export const MOCK_BOOKINGS: Booking[] = [
     providerId: 'provider-01',
     pickupLocation: 'Levy Junction, Lusaka',
     vehicle: MOCK_VEHICLES[3],
-    status: 'delivered',
+    status: 'delivered', // Completed booking
     createdAt: new Date(Date.now() - 86400000 * 5), // 5 days ago
     cost: 250.00,
   },
@@ -229,7 +229,7 @@ export const MOCK_BOOKINGS: Booking[] = [
     providerId: 'provider-01',
     pickupLocation: 'Arcades, Lusaka',
     vehicle: MOCK_VEHICLES[0],
-    status: 'cancelled',
+    status: 'cancelled', // Cancelled booking
     createdAt: new Date(Date.now() - 86400000 * 3), // 3 days ago
     cost: 150.00,
   },
