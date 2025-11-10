@@ -16,6 +16,7 @@ import {
   Bell,
   History,
   PlusCircle,
+  Map,
 } from "lucide-react";
 
 import {
@@ -46,6 +47,7 @@ export function SidebarContent() {
 
   const adminNav = [
     { href: "/dashboard/admin", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard/admin/tracking", label: "Fleet Tracking", icon: Map },
     { href: "/dashboard/bookings", label: "Bookings", icon: Book },
     { href: "/dashboard/drivers", label: "Drivers", icon: Users },
     { href: "/dashboard/providers", label: "Providers", icon: Wrench },
@@ -67,6 +69,7 @@ export function SidebarContent() {
 
   const providerNav = [
     { href: "/dashboard/provider", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard/provider/tracking", label: "Incoming", icon: Map },
     { href: "/dashboard/services", label: "Services", icon: Wrench },
   ];
   

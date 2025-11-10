@@ -11,12 +11,14 @@ import {
 import {
   MOCK_BOOKINGS,
   MOCK_DRIVERS,
+  MOCK_USERS,
 } from "@/lib/mock-data";
-import type { Booking, BookingStatus, Driver } from "@/lib/types";
+import type { Booking, BookingStatus, Driver, User } from "@/lib/types";
 
 interface BookingContextType {
   bookings: Booking[];
   drivers: Driver[];
+  users: User[];
   updateBookingStatus: (bookingId: string, newStatus: BookingStatus) => void;
   setBookings: React.Dispatch<SetStateAction<Booking[]>>;
 }
@@ -28,6 +30,7 @@ const BookingContext = createContext<BookingContextType | undefined>(
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [bookings, setBookings] = useState<Booking[]>(MOCK_BOOKINGS);
   const [drivers, setDrivers] = useState<Driver[]>(MOCK_DRIVERS);
+  const [users, setUsers] = useState<User[]>(MOCK_USERS);
 
   const updateBookingStatus = (bookingId: string, newStatus: BookingStatus) => {
     setBookings((prevBookings) =>
@@ -42,6 +45,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const value = {
     bookings,
     drivers,
+    users,
     updateBookingStatus,
     setBookings,
   };

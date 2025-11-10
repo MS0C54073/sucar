@@ -5,7 +5,7 @@ import { useState } from "react";
 import { LocationPromptDialog } from "@/components/dashboard/client/location-prompt-dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapView } from "@/components/dashboard/client/map-view";
+import { LiveMapView } from "@/components/dashboard/live-map-view";
 import { BookingStatus } from "@/components/dashboard/client/booking-status";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
@@ -55,8 +55,8 @@ export default function ClientDashboardPage() {
                         <CardTitle>Live Driver Tracking</CardTitle>
                         <CardDescription>See nearby drivers and track your active pickup.</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <MapView activeBooking={activeBooking} />
+                    <CardContent className="h-[400px] lg:h-[500px] p-0">
+                       <LiveMapView perspective="client" activeBooking={activeBooking} />
                     </CardContent>
                 </Card>
             </div>

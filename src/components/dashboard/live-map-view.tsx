@@ -1,0 +1,249 @@
+
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import Map, { Marker, Source, Layer, MapRef } from "react-map-gl";
+import { Card } from "@/components/ui/card";
+import { Car, MapPin, Wrench } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import type { Driver, Booking } from "@/lib/types";
+import { useAuth } from "@/context/auth-provider";
+import { useBooking } from "@/context/booking-provider";
+
+// Define key locations in Lusaka
+const USER_LOCATION = { longitude: 28.2814, latitude: -15.4167 }; // Lusaka center
+const CAR_WASH_LOCATION = { longitude: 28.3228, latitude: -15.3986 }; // East Park Mall area
+
+// Pre-defined initial positions for drivers
+const initialDriverPositions: Record<string, { longitude: number; latitude: number }> = {
+  "driver-01-data": { longitude: 28.2750, latitude: -15.4200 },
+  "driver-02-data": { longitude: 28.2900, latitude: -15.4100 },
+  "driver-03-data": { longitude: 28.2850, latitude: -15.4250 },
+  "driver-04-data": { longitude: 28.3000, latitude: -15.4300 },
+};
+
+interface Position {
+  longitude: number;
+  latitude: number;
+}
+
+interface SimulatedDriver extends Driver {
+  position: Position;
+  user: any; // Simplified from mock data
+  bookingId?: string;
+}
+
+type MapPerspective = "client" | "driver" | "provider" | "admin";
+
+interface MapViewProps {
+    perspective: MapPerspective;
+    activeBooking?: Booking; // For client view
+}
+
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+
+const routeLayer: mapboxgl.LineLayer = {
+  id: 'route',
+  type: 'line',
+  source: 'route',
+  layout: {
+    'line-join': 'round',
+    'line-cap': 'round'
+  },
+  paint: {
+    'line-color': '#3b82f6',
+    'line-width': 6,
+    'line-opacity': 0.8
+  }
+};
+
+async function getRoute(start: Position, end: Position) {
+  if (!MAPBOX_TOKEN) return null;
+  const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start.longitude},${start.latitude};${end.longitude},${end.latitude}?steps=true&geometries=geojson&access_token=${MAPBOX_TOKEN}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Failed to fetch route");
+    const json = await res.json();
+    return json.routes[0]?.geometry.coordinates || null;
+  } catch (error) {
+    console.error("Mapbox Route Error:", error);
+    return null;
+  }
+}
+
+export function LiveMapView({ perspective, activeBooking }: MapViewProps) {
+  const { user } = useAuth();
+  const { drivers: allDrivers, bookings: allBookings, users: allUsers } = useBooking();
+
+  const [simDrivers, setSimDrivers] = useState<SimulatedDriver[]>([]);
+  const [routes, setRoutes] = useState<Record<string, any>>({});
+  const mapRef = useRef<MapRef>(null);
+
+  // Initialize and update drivers based on bookings
+  useEffect(() => {
+    const initializedDrivers = allDrivers.map(driver => {
+      const userDetails = allUsers.find(u => u.userId === driver.userId);
+      const booking = allBookings.find(b => b.driverId === driver.driverId && b.status !== 'delivered' && b.status !== 'cancelled');
+      return {
+        ...driver,
+        user: userDetails,
+        position: initialDriverPositions[driver.driverId] || USER_LOCATION,
+        bookingId: booking?.bookingId,
+      };
+    });
+    setSimDrivers(initializedDrivers);
+  }, [allDrivers, allBookings, allUsers]);
+
+  // Simulation and Route Fetching Loop
+  useEffect(() => {
+    let animationFrameId: number;
+    const routePoints: Record<string, number[][]> = {};
+    const routeIndices: Record<string, number> = {};
+
+    const animate = async () => {
+      const newDriverStates = [...simDrivers];
+      const newRoutes = {...routes};
+
+      for (let i = 0; i < newDriverStates.length; i++) {
+        const driver = newDriverStates[i];
+        const booking = allBookings.find(b => b.bookingId === driver.bookingId);
+
+        if (booking) {
+          let targetPosition: Position | null = null;
+          if (['requested', 'confirmed'].includes(booking.status)) targetPosition = USER_LOCATION;
+          else if (['picked_up', 'in_wash', 'drying'].includes(booking.status)) targetPosition = CAR_WASH_LOCATION;
+          else if (booking.status === 'done') targetPosition = USER_LOCATION;
+
+          if (targetPosition) {
+            if (!routePoints[driver.driverId]) {
+              const fetchedRoute = await getRoute(driver.position, targetPosition);
+              if (fetchedRoute) {
+                routePoints[driver.driverId] = fetchedRoute;
+                routeIndices[driver.driverId] = 0;
+                newRoutes[driver.driverId] = { type: 'Feature', geometry: { type: 'LineString', coordinates: fetchedRoute }};
+                // Set driver to start of route
+                const [longitude, latitude] = fetchedRoute[0];
+                driver.position = { longitude, latitude };
+              }
+            }
+
+            const currentRoute = routePoints[driver.driverId];
+            const currentIndex = routeIndices[driver.driverId];
+
+            if (currentRoute && currentIndex < currentRoute.length) {
+              const [longitude, latitude] = currentRoute[currentIndex];
+              driver.position = { longitude, latitude };
+              routeIndices[driver.driverId]++;
+            }
+          }
+        } else {
+           // Wander randomly if no active booking
+           if (driver.availability) {
+                driver.position = {
+                    latitude: driver.position.latitude + (Math.random() - 0.5) * 0.001,
+                    longitude: driver.position.longitude + (Math.random() - 0.5) * 0.001
+                };
+           }
+           // Clear route if no booking
+           delete routePoints[driver.driverId];
+           delete routeIndices[driver.driverId];
+           delete newRoutes[driver.driverId];
+        }
+      }
+      setSimDrivers(newDriverStates);
+      setRoutes(newRoutes);
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allBookings]); // Re-run when bookings change
+
+  // Determine which drivers/routes to show based on perspective
+  const driversToDisplay = simDrivers.filter(driver => {
+      if (!driver.approved) return false;
+      switch (perspective) {
+          case 'admin': return true;
+          case 'client': return driver.driverId === activeBooking?.driverId;
+          case 'provider': 
+            const booking = allBookings.find(b => b.bookingId === driver.bookingId);
+            return booking && ['picked_up', 'in_wash', 'drying'].includes(booking.status);
+          case 'driver': return driver.userId === user?.userId;
+          default: return false;
+      }
+  });
+
+
+  if (!MAPBOX_TOKEN) {
+    return (
+      <Card className="flex items-center justify-center w-full h-full">
+        <div className="text-center">
+          <p className="font-semibold">Mapbox Access Token Missing</p>
+          <p className="text-sm text-muted-foreground">Please set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN</p>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="relative w-full h-full overflow-hidden rounded-lg">
+      <Map
+        ref={mapRef}
+        initialViewState={{
+          longitude: USER_LOCATION.longitude,
+          latitude: USER_LOCATION.latitude,
+          zoom: 12
+        }}
+        mapboxAccessToken={MAPBOX_TOKEN}
+        mapStyle="mapbox://styles/mapbox/streets-v12"
+      >
+         {driversToDisplay.map(driver => routes[driver.driverId] && (
+            <Source key={`route-${driver.driverId}`} id={`route-${driver.driverId}`} type="geojson" data={routes[driver.driverId]}>
+                <Layer {...routeLayer} id={`route-layer-${driver.driverId}`} />
+            </Source>
+        ))}
+
+        <TooltipProvider>
+            {driversToDisplay.map((driver) => (
+            <Marker key={driver.driverId} longitude={driver.position.longitude} latitude={driver.position.latitude} anchor="bottom">
+                <Tooltip>
+                    <TooltipTrigger>
+                        <div className={cn(
+                            "transition-colors",
+                            driver.bookingId ? "text-amber-400" : (driver.availability ? "text-primary" : "text-muted-foreground")
+                        )}>
+                            <Car className="h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p className="font-bold">{driver.user?.name || `Driver`}</p>
+                        <p>{driver.bookingId ? "On a trip" : (driver.availability ? "Available" : "Unavailable")}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </Marker>
+            ))}
+        </TooltipProvider>
+
+        <Marker longitude={USER_LOCATION.longitude} latitude={USER_LOCATION.latitude} anchor="bottom">
+            <div className="text-blue-500">
+                <MapPin className="h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" fill="currentColor" />
+            </div>
+        </Marker>
+
+        <Marker longitude={CAR_WASH_LOCATION.longitude} latitude={CAR_WASH_LOCATION.latitude} anchor="bottom">
+            <div className="text-purple-500">
+                <Wrench className="h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" fill="currentColor" />
+            </div>
+        </Marker>
+      </Map>
+    </Card>
+  );
+}
