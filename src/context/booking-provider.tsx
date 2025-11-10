@@ -47,6 +47,8 @@ interface BookingContextType {
   providers: Provider[];
   updateBookingStatus: (bookingId: string, newStatus: BookingStatus) => void;
   setBookings: React.Dispatch<SetStateAction<Booking[]>>;
+  setDrivers: React.Dispatch<SetStateAction<Driver[]>>;
+  setProviders: React.Dispatch<SetStateAction<Provider[]>>;
   getNextStatus: (currentStatus: BookingStatus) => BookingStatus | null;
   getNextStatusText: (currentStatus: BookingStatus) => string;
 }
@@ -87,6 +89,8 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     providers,
     updateBookingStatus,
     setBookings,
+    setDrivers,
+    setProviders,
     getNextStatus,
     getNextStatusText,
   };

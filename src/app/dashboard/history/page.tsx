@@ -1,4 +1,6 @@
 
+"use client";
+
 import {
   Card,
   CardContent,
@@ -16,14 +18,33 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MOCK_BOOKINGS } from "@/lib/mock-data";
+import { useBooking } from "@/context/booking-provider";
+import { useAuth } from "@/context/auth-provider";
 import { format } from "date-fns";
 import { Star } from "lucide-react";
 
 export default function HistoryPage() {
-  const completedBookings = MOCK_BOOKINGS.filter(
+  const { user, role } = useAuth();
+  const { bookings: allBookings, drivers, users: allUsers } = useBooking();
+
+  const userBookings = allBookings.filter(b => {
+    if (role === 'admin') return true;
+    if (role === 'client') return b.clientId === user?.userId;
+    if (role === 'driver') {
+        const driverDetails = drivers.find(d => d.userId === user?.userId);
+        return b.driverId === driverDetails?.driverId;
+    }
+     if (role === 'provider') return b.providerId === user?.userId; // Assuming providerId matches userId for providers
+    return false;
+  })
+
+  const completedBookings = userBookings.filter(
     (b) => b.status === "delivered" || b.status === "cancelled"
   );
+
+  const getClientName = (clientId: string) => allUsers.find(u => u.userId === clientId)?.name || 'N/A';
+  const getDriverName = (driverId: string) => drivers.find(d => d.driverId === driverId)?.name || 'N/A';
+
 
   return (
     <div>
@@ -45,6 +66,8 @@ export default function HistoryPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
+                 {role === 'admin' && <TableHead>Client</TableHead>}
+                 {role === 'admin' && <TableHead>Driver</TableHead>}
                 <TableHead>Vehicle</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Cost</TableHead>
@@ -55,6 +78,8 @@ export default function HistoryPage() {
               {completedBookings.map((booking) => (
                 <TableRow key={booking.bookingId}>
                   <TableCell>{format(booking.createdAt, "PPP")}</TableCell>
+                   {role === 'admin' && <TableCell>{getClientName(booking.clientId)}</TableCell>}
+                   {role === 'admin' && <TableCell>{getDriverName(booking.driverId)}</TableCell>}
                   <TableCell>
                     {booking.vehicle.make} {booking.vehicle.model}
                   </TableCell>
@@ -65,7 +90,7 @@ export default function HistoryPage() {
                     K{booking.cost.toFixed(2)}
                   </TableCell>
                    <TableCell className="text-right">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" disabled={role !== 'client'}>
                         <Star className="mr-2 h-4 w-4" />
                         Rate Service
                     </Button>
@@ -74,7 +99,7 @@ export default function HistoryPage() {
               ))}
                {completedBookings.length === 0 && (
                 <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24">No completed bookings yet.</TableCell>
+                    <TableCell colSpan={role === 'admin' ? 7 : 5} className="text-center h-24">No completed bookings yet.</TableCell>
                 </TableRow>
                )}
             </TableBody>

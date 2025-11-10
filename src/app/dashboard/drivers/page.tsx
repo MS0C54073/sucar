@@ -20,17 +20,38 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useBooking } from "@/context/booking-provider";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, UserCog } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "@/hooks/use-toast";
 
 export default function DriversPage() {
-  const { drivers } = useBooking();
+  const { drivers, setDrivers } = useBooking();
+
+  const handleApprovalChange = (driverId: string, approved: boolean) => {
+    setDrivers(prevDrivers => 
+        prevDrivers.map(driver => 
+            driver.driverId === driverId ? { ...driver, approved } : driver
+        )
+    );
+    toast({
+        title: `Driver ${approved ? 'Approved' : 'Blocked'}`,
+        description: `The driver's status has been updated.`,
+    });
+  }
+  
+  const handlePromote = (driverName: string) => {
+    toast({
+        title: `Promote ${driverName}`,
+        description: `In a real application, this would trigger the workflow to promote this user to a sub-admin role.`,
+    });
+  }
 
   return (
     <div>
@@ -72,8 +93,12 @@ export default function DriversPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                        <Switch id={`approve-${driver.driverId}`} checked={driver.approved} />
-                        <label htmlFor={`approve-${driver.driverId}`}>{driver.approved ? "Approved" : "Pending"}</label>
+                        <Switch 
+                            id={`approve-${driver.driverId}`} 
+                            checked={driver.approved}
+                            onCheckedChange={(checked) => handleApprovalChange(driver.driverId, checked)}
+                        />
+                        <label htmlFor={`approve-${driver.driverId}`}>{driver.approved ? "Approved" : "Blocked"}</label>
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
@@ -88,6 +113,11 @@ export default function DriversPage() {
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuItem>View Profile</DropdownMenuItem>
                       <DropdownMenuItem>View Active Trip</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                       <DropdownMenuItem onClick={() => handlePromote(driver.name)}>
+                        <UserCog className="mr-2" />
+                        Promote to Admin
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                   </TableCell>
@@ -100,4 +130,3 @@ export default function DriversPage() {
     </div>
   );
 }
-

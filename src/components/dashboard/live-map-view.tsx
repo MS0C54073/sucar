@@ -39,6 +39,7 @@ interface SimulatedDriver extends Driver {
   user: any; 
   bookingId?: string;
   bookingStatus?: BookingStatus;
+  eta?: number; // ETA in seconds
 }
 
 type MapPerspective = "client" | "driver" | "provider" | "admin";
@@ -83,7 +84,11 @@ async function getRoute(start: Position, end: Position) {
     const res = await fetch(url);
     if (!res.ok) throw new Error("Failed to fetch route");
     const json = await res.json();
-    return json.routes[0]?.geometry.coordinates || null;
+    const routeData = json.routes[0];
+    return {
+      coordinates: routeData?.geometry.coordinates || null,
+      duration: routeData?.duration || 0, // Duration in seconds
+    }
   } catch (error) {
     console.error("Mapbox Route Error:", error);
     return null;
@@ -140,18 +145,19 @@ export function LiveMapView({ perspective, activeBooking }: MapViewProps) {
           if (targetPosition) {
             // Fetch new route if target changes or no route exists
             if (!routePoints[driver.driverId] || newRoutes[driver.driverId]?.target !== booking.status) {
-              const fetchedRoute = await getRoute(driver.position, targetPosition);
-              if (fetchedRoute) {
-                routePoints[driver.driverId] = fetchedRoute;
+              const routeData = await getRoute(driver.position, targetPosition);
+              if (routeData && routeData.coordinates) {
+                routePoints[driver.driverId] = routeData.coordinates;
                 routeIndices[driver.driverId] = 0;
                 newRoutes[driver.driverId] = { 
                     type: 'Feature', 
-                    geometry: { type: 'LineString', coordinates: fetchedRoute },
+                    geometry: { type: 'LineString', coordinates: routeData.coordinates },
                     target: booking.status
                 };
                 // Set driver to start of route
-                const [longitude, latitude] = fetchedRoute[0];
+                const [longitude, latitude] = routeData.coordinates[0];
                 driver.position = { longitude, latitude };
+                driver.eta = routeData.duration;
               }
             }
 
@@ -162,6 +168,10 @@ export function LiveMapView({ perspective, activeBooking }: MapViewProps) {
               const [longitude, latitude] = currentRoute[currentIndex];
               driver.position = { longitude, latitude };
               routeIndices[driver.driverId]++;
+              // Simple ETA decrease, could be more sophisticated
+              if (driver.eta && driver.eta > 0) {
+                 driver.eta -= 1; // Assuming ~1 second per animation frame
+              }
             }
           }
         } else {
@@ -176,6 +186,7 @@ export function LiveMapView({ perspective, activeBooking }: MapViewProps) {
            delete routePoints[driver.driverId];
            delete routeIndices[driver.driverId];
            delete newRoutes[driver.driverId];
+           driver.eta = undefined;
         }
       }
       setSimDrivers(newDriverStates);
@@ -190,9 +201,14 @@ export function LiveMapView({ perspective, activeBooking }: MapViewProps) {
   }, [allBookings, simDrivers, routes]); 
 
   const driversToDisplay = simDrivers.filter(driver => {
-      if (!driver.approved && perspective !== 'admin') return false;
+      // Admins can see everyone, but filter out unapproved based on context
+      if (perspective === 'admin') {
+          return driver.approved || !driver.approved;
+      }
+      // Other roles can only see approved, active drivers.
+      if (!driver.approved) return false;
+      
       switch (perspective) {
-          case 'admin': return true;
           case 'client': return driver.driverId === activeBooking?.driverId;
           case 'provider': 
             const booking = allBookings.find(b => b.bookingId === driver.bookingId);
@@ -249,12 +265,12 @@ export function LiveMapView({ perspective, activeBooking }: MapViewProps) {
                 <Tooltip>
                     <TooltipTrigger>
                         <div className={cn("transition-colors", getDriverColor(driver))}>
-                             <Car className="h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />
+                             {driver.approved ? <Car className="h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" /> : <ShieldAlert className="h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] fill-destructive" />}
                         </div>
                     </TooltipTrigger>
                     <TooltipContent>
                         <p className="font-bold">{driver.user?.name || `Driver`}</p>
-                        {!driver.approved ? <p className="text-destructive">Not Approved</p> : 
+                        {!driver.approved ? <p className="text-destructive">Blocked</p> : 
                          driver.bookingId ? <p className="capitalize">{driver.bookingStatus?.replace("_", " ")}</p> : (driver.availability ? <p className="text-green-500">Available</p> : <p className="text-red-500">Unavailable</p>)}
                     </TooltipContent>
                 </Tooltip>
@@ -262,7 +278,7 @@ export function LiveMapView({ perspective, activeBooking }: MapViewProps) {
             ))}
         </TooltipProvider>
 
-        {selectedDriver && selectedBooking && (
+        {selectedDriver && (
              <Popup
                 longitude={selectedDriver.position.longitude}
                 latitude={selectedDriver.position.latitude}
@@ -273,14 +289,23 @@ export function LiveMapView({ perspective, activeBooking }: MapViewProps) {
              >
                 <div className="w-64">
                     <h3 className="font-bold text-lg">{selectedDriver.name}</h3>
-                    <p className={cn("font-semibold text-sm capitalize", getDriverColor(selectedDriver))}>{selectedDriver.bookingStatus?.replace("_", " ")}</p>
+                    <p className={cn("font-semibold text-sm capitalize", getDriverColor(selectedDriver))}>
+                        {!selectedDriver.approved ? 'Blocked' : selectedDriver.bookingStatus?.replace("_", " ") || (selectedDriver.availability ? 'Available' : 'Unavailable')}
+                    </p>
                     <Separator className="my-2" />
-                    <div className="space-y-2 text-sm">
-                        <p><span className="font-semibold">Client:</span> {selectedClient?.name}</p>
-                        <p><span className="font-semibold">Vehicle:</span> {selectedBooking.vehicle.make} {selectedBooking.vehicle.model}</p>
-                        <p><span className="font-semibold">Plate:</span> {selectedBooking.vehicle.plate_no}</p>
-                        <p><span className="font-semibold">Provider:</span> {selectedProvider?.name}</p>
-                    </div>
+                    { selectedBooking ? (
+                        <div className="space-y-2 text-sm">
+                            <p><span className="font-semibold">Client:</span> {selectedClient?.name}</p>
+                            <p><span className="font-semibold">Vehicle:</span> {selectedBooking.vehicle.make} {selectedBooking.vehicle.model}</p>
+                            <p><span className="font-semibold">Plate:</span> {selectedBooking.vehicle.plate_no}</p>
+                            <p><span className="font-semibold">Provider:</span> {selectedProvider?.name}</p>
+                             {selectedDriver.eta && selectedDriver.eta > 0 && (
+                                <p><span className="font-semibold">ETA:</span> {Math.ceil(selectedDriver.eta / 60)} minutes</p>
+                             )}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">No active trip.</p>
+                    )}
                 </div>
              </Popup>
         )}
@@ -288,7 +313,7 @@ export function LiveMapView({ perspective, activeBooking }: MapViewProps) {
         {perspective === 'client' && 
             <Marker longitude={USER_LOCATION.longitude} latitude={USER_LOCATION.latitude} anchor="bottom">
                 <div className="text-blue-500">
-                    <MapPin className="h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" fill="currentColor" />
+                    <MapPin className="h-8 w-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)] fill-currentColor" />
                 </div>
             </Marker>
         }

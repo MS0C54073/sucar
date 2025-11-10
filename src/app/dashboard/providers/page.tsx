@@ -27,9 +27,22 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "@/hooks/use-toast";
 
 export default function ProvidersPage() {
-  const { providers } = useBooking();
+  const { providers, setProviders } = useBooking();
+
+  const handleApprovalChange = (providerId: string, approved: boolean) => {
+    setProviders(prevProviders => 
+        prevProviders.map(provider => 
+            provider.providerId === providerId ? { ...provider, approved } : provider
+        )
+    );
+     toast({
+        title: `Provider ${approved ? 'Approved' : 'Blocked'}`,
+        description: `The provider's status has been updated.`,
+    });
+  };
 
   return (
     <div>
@@ -68,9 +81,10 @@ export default function ProvidersPage() {
                       <Switch
                         id={`approve-provider-${provider.providerId}`}
                         checked={provider.approved}
+                        onCheckedChange={(checked) => handleApprovalChange(provider.providerId, checked)}
                       />
                       <label htmlFor={`approve-provider-${provider.providerId}`}>
-                        {provider.approved ? "Approved" : "Pending"}
+                        {provider.approved ? "Approved" : "Blocked"}
                       </label>
                     </div>
                   </TableCell>
