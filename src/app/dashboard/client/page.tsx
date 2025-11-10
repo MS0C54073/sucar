@@ -9,7 +9,6 @@ import { LiveMapView } from "@/components/dashboard/live-map-view";
 import { BookingStatus } from "@/components/dashboard/client/booking-status";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
-import type { BookingStatus as BookingStatusType, Booking } from "@/lib/types";
 import { useBooking } from "@/context/booking-provider";
 import { useAuth } from "@/context/auth-provider";
 
@@ -25,8 +24,6 @@ export default function ClientDashboardPage() {
       b.status !== "cancelled"
   );
   
-  const currentStatus = activeBooking?.status;
-
   if (!locationSet) {
     return <LocationPromptDialog onLocationSet={() => setLocationSet(true)} />;
   }

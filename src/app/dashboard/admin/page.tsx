@@ -18,7 +18,7 @@ export default function AdminDashboardPage() {
             <Button asChild>
                 <Link href="/dashboard/admin/tracking">
                     <Map />
-                    <span>Live Tracking</span>
+                    <span>Live Fleet Tracking</span>
                 </Link>
             </Button>
         </div>

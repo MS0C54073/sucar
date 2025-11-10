@@ -43,13 +43,13 @@ export function SidebarContent() {
   const { user, role, logout } = useAuth();
   const pathname = usePathname();
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => pathname.startsWith(path);
 
   const adminNav = [
     { href: "/dashboard/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/dashboard/admin/tracking", label: "Fleet Tracking", icon: Map },
     { href: "/dashboard/bookings", label: "Bookings", icon: Book },
-    { href: "/dashboard/drivers", label: "Drivers", icon: Users },
+    { href: "/dashboard/drivers", label: "Drivers", icon: Shield },
     { href: "/dashboard/providers", label: "Providers", icon: Wrench },
     { href: "/dashboard/route-optimizer", label: "Route Optimizer", icon: Route },
   ];
