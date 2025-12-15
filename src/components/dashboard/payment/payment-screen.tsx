@@ -18,7 +18,7 @@ interface PaymentScreenProps {
 }
 
 export function PaymentScreen({ bookingId }: PaymentScreenProps) {
-    const { bookings } = useBooking();
+    const { bookings, updateBookingPaymentStatus } = useBooking();
     const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
     const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'success' | 'error'>('pending');
     const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
@@ -32,12 +32,15 @@ export function PaymentScreen({ bookingId }: PaymentScreenProps) {
     const handlePaymentSubmit = (details: PaymentDetails) => {
         setPaymentDetails(details);
         setPaymentStatus('processing');
+        updateBookingPaymentStatus(bookingId, 'processing');
         // Simulate API call
         setTimeout(() => {
             const success = Math.random() > 0.1; // 90% success rate
             if (success) {
+                updateBookingPaymentStatus(bookingId, 'paid');
                 setPaymentStatus('success');
             } else {
+                updateBookingPaymentStatus(bookingId, 'failed');
                 setPaymentStatus('error');
             }
         }, 3000);

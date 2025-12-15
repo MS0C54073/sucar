@@ -14,7 +14,7 @@ import {
   MOCK_USERS,
   MOCK_PROVIDERS
 } from "@/lib/mock-data";
-import type { Booking, BookingStatus, Driver, User, Provider } from "@/lib/types";
+import type { Booking, BookingStatus, Driver, User, Provider, PaymentStatus } from "@/lib/types";
 
 // The Finite State Machine for booking status progression.
 // This is the SINGLE SOURCE OF TRUTH for status transitions.
@@ -46,6 +46,7 @@ interface BookingContextType {
   users: User[];
   providers: Provider[];
   updateBookingStatus: (bookingId: string, newStatus: BookingStatus) => void;
+  updateBookingPaymentStatus: (bookingId: string, newStatus: PaymentStatus) => void;
   addBooking: (booking: Booking) => void;
   setBookings: React.Dispatch<SetStateAction<Booking[]>>;
   setDrivers: React.Dispatch<SetStateAction<Driver[]>>;
@@ -75,6 +76,16 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     );
   };
   
+  const updateBookingPaymentStatus = (bookingId: string, newStatus: PaymentStatus) => {
+    setBookings((prevBookings) =>
+      prevBookings.map((booking) =>
+        booking.bookingId === bookingId
+          ? { ...booking, paymentStatus: newStatus }
+          : booking
+      )
+    );
+  };
+
   const addBooking = (booking: Booking) => {
     setBookings(prev => [booking, ...prev]);
   }
@@ -93,6 +104,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     users,
     providers,
     updateBookingStatus,
+    updateBookingPaymentStatus,
     addBooking,
     setBookings,
     setDrivers,
