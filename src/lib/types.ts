@@ -87,10 +87,11 @@ export interface Booking {
   vehicle: Car;
   providerId: string;
   cost: number;
+  paymentStatus?: PaymentStatus;
 }
 
-export type PaymentStatus = "pending" | "paid" | "failed";
-export type PaymentMethod = "cash" | "mobile_money" | "card";
+export type PaymentStatus = "pending" | "processing" | "paid" | "failed" | "refunded";
+export type PaymentMethod = "mtn_money" | "airtel_money" | "card" | "cash";
 
 export interface Payment {
   paymentId: string;

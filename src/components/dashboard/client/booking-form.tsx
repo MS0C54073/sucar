@@ -36,6 +36,7 @@ import { Car, Send } from "lucide-react";
 import { MOCK_VEHICLES } from "@/lib/mock-data";
 import { Label } from "@/components/ui/label";
 import { useBooking } from "@/context/booking-provider";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   bookingType: z.enum(["self-drive", "request-driver"], {
@@ -49,7 +50,8 @@ const formSchema = z.object({
 });
 
 export function BookingForm() {
-  const { providers } = useBooking();
+  const { providers, addBooking } = useBooking();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,14 +64,35 @@ export function BookingForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // This is where you would create a new booking document in Firestore.
-    // For now, we just show a toast.
+    const newBookingId = `booking-${Date.now()}`;
+    const vehicle = MOCK_VEHICLES.find(v => v.vehicleId === values.vehicleId);
+    
+    if (!vehicle) {
+        toast({ variant: "destructive", title: "Error", description: "Selected vehicle not found."});
+        return;
+    }
+
+    const newBooking = {
+        bookingId: newBookingId,
+        clientId: 'client-01', // Mocked client
+        driverId: 'driver-01-data', // Mocked driver for now
+        pickupLocation: values.pickupLocation,
+        status: 'requested' as const,
+        createdAt: new Date(),
+        vehicle,
+        providerId: values.providerId,
+        cost: 150.00, // Mock cost
+        paymentStatus: 'pending' as const,
+    }
+
+    addBooking(newBooking);
+    
     toast({
       title: "Booking Requested!",
-      description: "We're finding a driver for you.",
+      description: "We're finding a driver for you. Please proceed to payment.",
     });
     form.reset();
+    router.push(`/dashboard/payment?bookingId=${newBookingId}`);
   }
 
   const approvedProviders = providers.filter(p => p.approved);
@@ -212,7 +235,7 @@ export function BookingForm() {
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full">
-              Request Pickup
+              Request Pickup & Pay
             </Button>
           </CardFooter>
         </form>
