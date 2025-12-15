@@ -38,7 +38,10 @@ export default function HistoryPage() {
         const driverDetails = drivers.find(d => d.userId === user?.userId);
         return b.driverId === driverDetails?.driverId;
     }
-     if (role === 'provider') return b.providerId === user?.userId;
+     if (role === 'provider') {
+        const providerDetails = allUsers.find(p => p.userId === user?.userId);
+        return b.providerId === providerDetails?.userId;
+     }
     return false;
   })
 

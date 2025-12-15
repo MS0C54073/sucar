@@ -17,6 +17,8 @@ import {
   History,
   PlusCircle,
   Map,
+  Contact,
+  Info,
 } from "lucide-react";
 
 import {
@@ -33,6 +35,7 @@ import { useAuth } from "@/context/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const getInitials = (name: string) => {
+  if (!name) return ""
   return name
     .split(" ")
     .map((n) => n[0])
@@ -43,7 +46,13 @@ export function SidebarContent() {
   const { user, role, logout } = useAuth();
   const pathname = usePathname();
 
-  const isActive = (path: string) => pathname.startsWith(path);
+  const isActive = (path: string) => pathname === path || (path !== '/dashboard' && pathname.startsWith(path));
+
+  const baseNav = [
+     { href: "#features", label: "Features", icon: Car },
+     { href: "#about", label: "About Us", icon: Info },
+     { href: "#contact", label: "Contact", icon: Contact },
+  ]
 
   const adminNav = [
     { href: "/dashboard/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -52,11 +61,11 @@ export function SidebarContent() {
     { href: "/dashboard/drivers", label: "Drivers", icon: Shield },
     { href: "/dashboard/providers", label: "Providers", icon: Wrench },
     { href: "/dashboard/route-optimizer", label: "Route Optimizer", icon: Route },
+    { href: "/dashboard/history", label: "History", icon: History },
   ];
 
   const clientNav = [
     { href: "/dashboard/client", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/dashboard/my-bookings", label: "My Bookings", icon: Book },
     { href: "/dashboard/new-booking", label: "New Booking", icon: PlusCircle },
     { href: "/dashboard/history", label: "History", icon: History },
     { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
@@ -65,12 +74,14 @@ export function SidebarContent() {
   const driverNav = [
     { href: "/dashboard/driver", label: "My Trips", icon: Route },
     { href: "/dashboard/route-optimizer", label: "Route Optimizer", icon: Route },
+    { href: "/dashboard/history", label: "History", icon: History },
   ];
 
   const providerNav = [
     { href: "/dashboard/provider", label: "Dashboard", icon: LayoutDashboard },
     { href: "/dashboard/provider/tracking", label: "Incoming", icon: Map },
     { href: "/dashboard/services", label: "Services", icon: Wrench },
+    { href: "/dashboard/history", label: "History", icon: History },
   ];
   
   const navItems = { admin: adminNav, client: clientNav, driver: driverNav, provider: providerNav }[role || 'client'];
@@ -83,7 +94,7 @@ export function SidebarContent() {
       </SidebarHeader>
       <SidebarContentArea>
         <SidebarMenu>
-          {navItems.map((item) => (
+          {[...baseNav, ...navItems].map((item) => (
             <SidebarMenuItem key={item.label}>
               <Link href={item.href} passHref>
                 <SidebarMenuButton
@@ -116,16 +127,18 @@ export function SidebarContent() {
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
-        <div className="flex items-center gap-3 p-2 rounded-lg">
-            <Avatar className="h-10 w-10">
-                <AvatarImage src={user?.avatarUrl} alt={user?.name} />
-                <AvatarFallback>{user ? getInitials(user.name) : 'U'}</AvatarFallback>
-            </Avatar>
-            <div className="overflow-hidden group-data-[collapsible=icon]:hidden">
-                <p className="font-medium truncate">{user?.name}</p>
-                <p className="text-xs text-sidebar-foreground/70 truncate">{user?.email}</p>
+         {user && (
+            <div className="flex items-center gap-3 p-2 rounded-lg">
+                <Avatar className="h-10 w-10">
+                    <AvatarImage src={user?.avatarUrl} alt={user?.name} />
+                    <AvatarFallback>{user ? getInitials(user.name) : 'U'}</AvatarFallback>
+                </Avatar>
+                <div className="overflow-hidden group-data-[collapsible=icon]:hidden">
+                    <p className="font-medium truncate">{user?.name}</p>
+                    <p className="text-xs text-sidebar-foreground/70 truncate">{user?.email}</p>
+                </div>
             </div>
-        </div>
+        )}
       </SidebarFooter>
     </>
   );
