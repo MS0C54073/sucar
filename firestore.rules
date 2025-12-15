@@ -1,31 +1,175 @@
-
+/**
+ * # Firestore Security Rules for SuCAR
+ *
+ * ## Core Philosophy
+ * This ruleset enforces a user-centric security model based on implicitly defined roles. A user's role (Client, Driver, Provider) is determined by the existence of a corresponding profile document linked to their user ID. The rules prioritize strict authorization, ensuring users can only access data they own or are explicitly participants in (e.g., a booking). The default posture is to deny access unless explicitly granted.
+ *
+ * ## Data Structure
+ * The data model uses a flat, top-level collection structure for all primary entities (`/users`, `/drivers`, `/clients`, `/providers`, `/bookings`, `/payments`). This design is chosen for query efficiency and to simplify rule logic.
+ *
+ * ## Key Security Decisions
+ * - **Strict Ownership**: User-specific data (in `/users`, `/drivers`, `/clients`) is strictly private. A user can only ever access their own documents in these collections.
+ * - **No Public User Listing**: To protect Personally Identifiable Information (PII), listing documents from the `/users`, `/drivers`, and `/clients` collections is disallowed for all users.
+ * - **Shared Access via Denormalization**: Bookings are shared resources. Access control is managed by checking if a user's ID is associated with the `clientId`, `driverId`, or `providerId` stored on the booking document. This requires `get()` calls to the respective profiles, a trade-off for security in the current data model.
+ * - **Public vs. Private Profiles**: Car wash provider profiles (`/providers`) are considered public business listings and are readable by anyone. Driver and client profiles contain sensitive information and are kept private.
+ *
+ * ## Denormalization for Authorization
+ * The rules heavily rely on the denormalized `userId` field present in the `Driver`, `Client`, and `Provider` documents. This allows for direct ownership checks without needing to reference the base `/users` collection. For `Booking` and `Payment` documents, access is determined by looking up these associated profiles. For better performance in a production environment, consider denormalizing the actual `userId`s of the client, driver, and provider directly onto the `Booking` documents to eliminate costly `get()` operations in the rules.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Helper functions to abstract and reuse logic across the ruleset.
+    
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the authenticated user's UID matches the provided userId.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks if the document being accessed already exists.
+     * Crucial for state-changing operations like update and delete.
+     */
+    function isExistingDoc() {
+      return resource != null;
+    }
+
+    /**
+     * Combines ownership and existence checks for secure updates and deletes.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && isExistingDoc();
+    }
+
+    /**
+     * Checks if the current user is the client associated with a given booking's data.
+     * Requires a 'get' call to the client's profile to retrieve their userId.
+     * @param bookingData The resource.data or request.resource.data of a booking.
+     */
+    function isClientOfBooking(bookingData) {
+      return isSignedIn() && get(/databases/$(database)/documents/clients/$(bookingData.clientId)).data.userId == request.auth.uid;
+    }
+
+    /**
+     * Checks if the current user is a participant (client, driver, or provider) in a booking.
+     * This function performs up to three 'get' operations and is essential for securing
+     * shared booking and payment documents.
+     * @param bookingData The resource.data or request.resource.data of a booking.
+     */
+    function isBookingParticipant(bookingData) {
+      let clientUserId = get(/databases/$(database)/documents/clients/$(bookingData.clientId)).data.userId;
+      let driverUserId = get(/databases/$(database)/documents/drivers/$(bookingData.driverId)).data.userId;
+      let providerUserId = get(/databases/$(database)/documents/providers/$(bookingData.providerId)).data.userId;
+      return isSignedIn() && (
+        request.auth.uid == clientUserId ||
+        request.auth.uid == driverUserId ||
+        request.auth.uid == providerUserId
+      );
+    }
+    
+    /**
+     * @description Rules for a user's own account document.
+     * @path /users/{userId}
+     * @allow (create) A new user signing up and creating their own user document.
+     * @allow (get) An authenticated user reading their own profile.
+     * @deny (get) User 'A' trying to read the profile of user 'B'.
+     * @deny (list) Any user attempting to list all user documents.
+     * @principle Restricts access to a user's own data tree, enforcing strict privacy.
+     */
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow get, update, delete: if isOwner(userId) && isExistingDoc();
+      allow create: if isOwner(userId);
+      allow list: if false;
     }
 
+    /**
+     * @description Rules for private driver profiles.
+     * @path /drivers/{driverId}
+     * @allow (create) An authenticated user creating their own driver profile.
+     * @allow (get) The driver reading their own profile document.
+     * @deny (get) Another user trying to read a driver's private profile.
+     * @deny (list) Any user attempting to list all driver documents.
+     * @principle Enforces document ownership for all operations based on a denormalized `userId` field.
+     */
     match /drivers/{driverId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null; // Should be more specific later
+      allow get: if isOwner(resource.data.userId);
+      allow list: if false;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isExistingOwner(resource.data.userId);
     }
 
-    match /services/{serviceId} {
-        allow read: if true;
-        allow write: if request.auth != null; // Admin only
+    /**
+     * @description Rules for private client profiles.
+     * @path /clients/{clientId}
+     * @allow (create) An authenticated user creating their own client profile.
+     * @allow (get) The client reading their own profile document.
+     * @deny (get) Another user trying to read a client's private profile.
+     * @deny (list) Any user attempting to list all client documents.
+     * @principle Enforces document ownership for all operations based on a denormalized `userId` field.
+     */
+    match /clients/{clientId} {
+      allow get: if isOwner(resource.data.userId);
+      allow list: if false;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isExistingOwner(resource.data.userId);
     }
 
+    /**
+     * @description Rules for car wash provider profiles.
+     * @path /providers/{providerId}
+     * @allow (get, list) Any user, including unauthenticated ones, browsing provider listings.
+     * @allow (update) The provider (owner) updating their business details.
+     * @deny (update) A random user trying to change a provider's service listings.
+     * @principle Implements a "Public Read with Owner-Only Writes" pattern for business listings.
+     */
+    match /providers/{providerId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isExistingOwner(resource.data.userId);
+    }
+
+    /**
+     * @description Rules for shared booking documents.
+     * @path /bookings/{bookingId}
+     * @allow (create) A logged-in user creating a booking for themselves.
+     * @allow (get, update) The client, driver, or provider associated with the booking accessing or updating it.
+     * @deny (get) A user not involved in the booking trying to read its details.
+     * @deny (list) Any user trying to list all bookings in the system.
+     * @principle Secures a shared resource by granting access only to listed participants.
+     */
     match /bookings/{bookingId} {
-      // Clients can read their own bookings, drivers can read theirs.
-      allow get: if request.auth != null && (request.auth.uid == resource.data.clientId || request.auth.uid == resource.data.driverId);
-      // Clients can query bookings by their own clientId.
-      allow list: if request.auth != null && request.query.get("clientId") == request.auth.uid;
-      // Any authenticated user can create a booking for now.
-      allow create: if request.auth != null;
-      // Only clients or drivers associated with a booking can update it.
-      allow update: if request.auth != null && (request.auth.uid == resource.data.clientId || request.auth.uid == resource.data.driverId);
-      allow delete: if false; // Disallow deletion for now.
+      allow get: if isBookingParticipant(resource.data);
+      allow list: if false;
+      allow create: if isClientOfBooking(request.resource.data);
+      allow update: if isBookingParticipant(resource.data) && isExistingDoc();
+      allow delete: if isClientOfBooking(resource.data) && isExistingDoc();
+    }
+
+    /**
+     * @description Rules for payment documents, which are linked to bookings.
+     * @path /payments/{paymentId}
+     * @allow (get) The client, driver, or provider from the associated booking reading the payment details.
+     * @allow (create) The client of the associated booking creating a payment record.
+     * @deny (get) A user not involved in the booking trying to read payment information.
+     * @deny (list) Any user trying to list all payments.
+     * @principle Enforces relational security; access to a payment is controlled by access to its parent booking.
+     */
+    match /payments/{paymentId} {
+      allow get: if isBookingParticipant(get(/databases/$(database)/documents/bookings/$(resource.data.bookingId)).data);
+      allow list: if false;
+      allow create: if isClientOfBooking(get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data);
+      allow update: if isBookingParticipant(get(/databases/$(database)/documents/bookings/$(resource.data.bookingId)).data) && isExistingDoc();
+      allow delete: if isClientOfBooking(get(/databases/$(database)/documents/bookings/$(resource.data.bookingId)).data) && isExistingDoc();
     }
   }
 }
