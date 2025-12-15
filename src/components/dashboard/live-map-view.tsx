@@ -178,8 +178,8 @@ export function LiveMapView({ perspective, activeBooking }: MapViewProps) {
            // Wander randomly if no active booking and available
            if (driver.availability && driver.approved) {
                 driver.position = {
-                    latitude: driver.position.latitude + (Math.random() - 0.5) * 0.0005,
-                    longitude: driver.position.longitude + (Math.random() - 0.5) * 0.0005
+                    latitude: driver.position.latitude + (Math.random() - 0.5) * 0.001,
+                    longitude: driver.position.longitude + (Math.random() - 0.5) * 0.001
                 };
            }
            // Clear route if no booking

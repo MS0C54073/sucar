@@ -97,7 +97,7 @@ export function BookingForm() {
                           <RadioGroupItem
                             value="self-drive"
                             id="self-drive"
-                            className="sr-only"
+                            className="peer sr-only"
                           />
                         </FormControl>
                         <Label
@@ -113,7 +113,7 @@ export function BookingForm() {
                           <RadioGroupItem
                             value="request-driver"
                             id="request-driver"
-                            className="sr-only"
+                            className="peer sr-only"
                           />
                         </FormControl>
                         <Label
