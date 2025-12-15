@@ -6,17 +6,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Bell, CheckCircle } from "lucide-react";
+import { Bell } from "lucide-react";
 
 const notifications = [
     {
         title: "Booking Confirmed!",
-        description: "Your booking for the Toyota Mark X has been confirmed. Driver Bob W. is on the way.",
+        description: "Your booking for the Toyota Mark X has been confirmed. Driver John B. is on the way.",
         time: "5 minutes ago",
     },
     {
         title: "Payment Successful",
-        description: "Your payment of $25.00 for booking #BK-5829 has been processed.",
+        description: "Your payment of K150.00 for booking #BK-5829 has been processed.",
         time: "1 day ago",
     },
     {

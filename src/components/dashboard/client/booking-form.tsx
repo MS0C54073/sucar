@@ -36,6 +36,7 @@ import { Car, Send } from "lucide-react";
 import { MOCK_VEHICLES } from "@/lib/mock-data";
 import { Label } from "@/components/ui/label";
 import { useBooking } from "@/context/booking-provider";
+import { useAuth } from "@/context/auth-provider";
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
@@ -51,6 +52,7 @@ const formSchema = z.object({
 
 export function BookingForm() {
   const { providers, addBooking } = useBooking();
+  const { user } = useAuth();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -64,6 +66,11 @@ export function BookingForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user) {
+        toast({ variant: "destructive", title: "Error", description: "You must be logged in to create a booking."});
+        return;
+    }
+
     const newBookingId = `booking-${Date.now()}`;
     const vehicle = MOCK_VEHICLES.find(v => v.vehicleId === values.vehicleId);
     
@@ -74,7 +81,7 @@ export function BookingForm() {
 
     const newBooking = {
         bookingId: newBookingId,
-        clientId: 'client-01', // Mocked client
+        clientId: user.userId, // Use logged-in user's ID
         driverId: 'driver-01-data', // Mocked driver for now
         pickupLocation: values.pickupLocation,
         status: 'requested' as const,

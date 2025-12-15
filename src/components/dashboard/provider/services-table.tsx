@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -14,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, PlusCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,11 +28,16 @@ import { MOCK_SERVICES } from "@/lib/mock-data";
 export function ServicesTable() {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Manage Services</CardTitle>
-        <CardDescription>
-          View, edit, or add new services for your car wash.
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+            <CardTitle>Manage Services</CardTitle>
+            <CardDescription>
+            View, edit, or add new services for your car wash.
+            </CardDescription>
+        </div>
+        <Button>
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Service
+        </Button>
       </CardHeader>
       <CardContent>
         <Table>
@@ -39,6 +45,7 @@ export function ServicesTable() {
             <TableRow>
               <TableHead>Service Name</TableHead>
               <TableHead>Description</TableHead>
+              <TableHead>Duration</TableHead>
               <TableHead className="text-right">Price</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -48,6 +55,7 @@ export function ServicesTable() {
               <TableRow key={service.id}>
                 <TableCell className="font-medium">{service.name}</TableCell>
                 <TableCell>{service.description}</TableCell>
+                <TableCell>{service.durationMinutes} min</TableCell>
                 <TableCell className="text-right">
                   K{service.price.toFixed(2)}
                 </TableCell>
@@ -62,7 +70,7 @@ export function ServicesTable() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuItem>Edit Service</DropdownMenuItem>
-                      <DropdownMenuItem>Delete Service</DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive">Delete Service</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
