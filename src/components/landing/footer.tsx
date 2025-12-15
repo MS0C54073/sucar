@@ -21,38 +21,22 @@ export function Footer() {
   return (
     <footer id="contact" className="w-full bg-card border-t">
       <div className="container mx-auto px-4 py-8 md:px-6">
-        <div className="grid gap-8 lg:grid-cols-3">
-            <div className="flex flex-col gap-4">
-                <Logo />
-                <p className="text-muted-foreground max-w-xs">The future of car care in Lusaka. Convenient, reliable, and always on time.</p>
-                 <a 
-                    href="https://www.google.com/maps/search/?api=1&query=Lusaka+Town%2C+Lusaka+Province%2C+Zambia" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex items-start gap-2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                    <MapPin className="h-5 w-5 mt-1 shrink-0" />
-                    <span>Lusaka Town, Lusaka Province, Zambia</span>
-                </a>
-            </div>
-            <div className="grid gap-4">
-                <h4 className="font-semibold text-lg">Quick Links</h4>
-                <nav className="flex flex-col gap-2">
-                    <Link href="#features" className="text-muted-foreground hover:text-foreground" prefetch={false}>
-                        Features
-                    </Link>
-                    <Link href="#about" className="text-muted-foreground hover:text-foreground" prefetch={false}>
-                        About Us
-                    </Link>
-                     <Link href="#contact" className="text-muted-foreground hover:text-foreground" prefetch={false}>
-                        Contact
-                    </Link>
-                    <Link href="/login" className="text-muted-foreground hover:text-foreground" prefetch={false}>
-                        Login
-                    </Link>
-                </nav>
-            </div>
-             <div className="grid gap-2">
+        <div className="grid gap-8 lg:grid-cols-2">
+          <div className="flex flex-col gap-4">
+            <Logo />
+            <p className="text-muted-foreground max-w-xs">
+              The future of car care in Lusaka. Convenient, reliable, and always on time.
+            </p>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Lusaka+Town%2C+Lusaka+Province%2C+Zambia"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <MapPin className="h-5 w-5 mt-1 shrink-0" />
+              <span>Lusaka Town, Lusaka Province, Zambia</span>
+            </a>
+            <div className="grid gap-2">
                 <h4 className="font-semibold text-lg">Connect With Us</h4>
                 <div className="flex items-center gap-4">
                     <Link href="#" aria-label="Facebook" className="text-blue-600 hover:text-blue-700 transition-colors">
@@ -72,9 +56,22 @@ export function Footer() {
                     </Link>
                 </div>
             </div>
+          </div>
+          <div className="relative rounded-lg overflow-hidden h-64 lg:h-auto">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d123026.31750519396!2d28.21337479726563!3d-15.424640900000003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1940f5636027371f%3A0x25b9052586e97424!2sLusaka%2C%20Zambia!5e0!3m2!1sen!2sus!4v1700000000000"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen={false}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Google Map of Lusaka"
+            ></iframe>
+          </div>
         </div>
         <div className="mt-8 border-t pt-6 text-center text-sm text-muted-foreground">
-             <p>© {new Date().getFullYear()} SuCAR Inc. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} SuCAR Inc. All rights reserved.</p>
         </div>
       </div>
     </footer>
