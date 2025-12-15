@@ -1,7 +1,7 @@
 
 import Link from "next/link";
 import { Logo } from "@/components/logo";
-import { Facebook, Mail } from "lucide-react";
+import { Facebook, Mail, Phone } from "lucide-react";
 
 // Inline SVG for WhatsApp as it's not in lucide-react
 const WhatsAppIcon = () => (
@@ -56,6 +56,9 @@ export function Footer() {
                     </Link>
                     <Link href="#" aria-label="WhatsApp" className="text-green-500 hover:text-green-600 transition-colors">
                         <WhatsAppIcon />
+                    </Link>
+                    <Link href="tel:+260974034628" aria-label="Call Us" className="text-gray-500 hover:text-primary transition-colors">
+                        <Phone className="h-6 w-6" />
                     </Link>
                     <Link href="#" aria-label="Email" className="text-red-600 hover:text-red-700 transition-colors">
                         <Mail className="h-6 w-6" />
