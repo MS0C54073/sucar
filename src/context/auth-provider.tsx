@@ -1,7 +1,6 @@
 
 "use client";
 
-import type { User, UserRole } from "@/lib/types";
 import {
   useState,
   createContext,
@@ -10,14 +9,32 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { MOCK_USERS, MOCK_CLIENTS, MOCK_DRIVERS, MOCK_PROVIDERS } from "@/lib/mock-data";
+import {
+  getAuth,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  type User as FirebaseUser,
+} from "firebase/auth";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { initializeFirebase } from "@/firebase";
+import type { User, UserRole } from "@/lib/types";
 
-// This interface is simplified for the mock provider
+// Initialize Firebase
+const { auth, firestore } = initializeFirebase();
+
 interface AuthContextType {
   user: User | null;
+  firebaseUser: FirebaseUser | null;
   role: UserRole | null;
-  login: (role: UserRole, email?: string, password?: string) => Promise<void>;
-  signup: (name: string, email: string, password: string, role: UserRole) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (
+    name: string,
+    email: string,
+    password: string,
+    role: UserRole
+  ) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -26,46 +43,99 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Mock login function
-  const login = async (role: UserRole, email?: string, password?: string) => {
-    setLoading(true);
-    // Find a mock user with the specified role
-    const mockUser = MOCK_USERS.find((u) => u.role === role);
-    if (mockUser) {
-      setUser(mockUser);
-      router.push("/dashboard");
-    } else {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      setFirebaseUser(fbUser);
+      if (fbUser) {
+        // User is signed in, get their profile from Firestore
+        const userDocRef = doc(firestore, "users", fbUser.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          setUser({ userId: fbUser.uid, ...userDocSnap.data() } as User);
+        } else {
+          // This case might happen if the Firestore doc wasn't created
+          // Or if you want to handle profile creation post-social login etc.
+          console.log("No user profile found in Firestore for UID:", fbUser.uid);
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
       setLoading(false);
-      throw new Error(`No mock user found for role: ${role}`);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // onAuthStateChanged will handle setting user and redirecting
+      router.push("/dashboard");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  // Mock signup function
-  const signup = async (name: string, email: string, password: string, role: UserRole) => {
+  const signup = async (
+    name: string,
+    email: string,
+    password: string,
+    role: UserRole
+  ) => {
     setLoading(true);
-    console.log("Signing up user:", { name, email, role });
-    // In a real app, you'd create a user. Here we just log in as the chosen role.
-    const mockUser = MOCK_USERS.find((u) => u.role === role);
-     if (mockUser) {
-      setUser(mockUser);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const fbUser = userCredential.user;
+
+      // Create user profile in Firestore
+      const userProfile: Omit<User, "userId" | "createdAt"> = {
+        name,
+        email,
+        phone: "", // Add phone if you collect it, otherwise leave empty
+        role,
+        avatarUrl: `https://picsum.photos/seed/${fbUser.uid}/100/100`,
+      };
+
+      await setDoc(doc(firestore, "users", fbUser.uid), {
+        ...userProfile,
+        createdAt: new Date(),
+      });
+      
+      setUser({ userId: fbUser.uid, ...userProfile, createdAt: new Date() });
+
+      // onAuthStateChanged will handle the rest
       router.push("/dashboard");
-    } else {
+
+    } finally {
       setLoading(false);
-      throw new Error(`No mock user found for role: ${role}`);
     }
-    setLoading(false);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await signOut(auth);
     setUser(null);
     router.push("/login");
   };
 
-  const value = { user, role: user?.role || null, login, signup, logout, loading };
+  const value = {
+    user,
+    firebaseUser,
+    role: user?.role || null,
+    login,
+    signup,
+    logout,
+    loading,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

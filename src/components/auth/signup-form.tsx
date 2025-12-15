@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -54,8 +53,6 @@ export function SignUpForm() {
       role: "client",
     },
   });
-
-  const selectedRole = form.watch("role");
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);

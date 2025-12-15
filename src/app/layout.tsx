@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/context/auth-provider";
@@ -36,11 +37,9 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          <BookingProvider>
-            {children}
-            <Toaster />
-          </BookingProvider>
+            <BookingProvider>{children}</BookingProvider>
         </AuthProvider>
+        <Toaster />
       </body>
     </html>
   );

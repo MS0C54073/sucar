@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -13,7 +14,7 @@ export default function LoginPage() {
       <CardHeader>
         <CardTitle>Welcome Back!</CardTitle>
         <CardDescription>
-          Select a role to login or enter your credentials.
+          Enter your credentials to access your dashboard.
         </CardDescription>
       </CardHeader>
       <CardContent>
