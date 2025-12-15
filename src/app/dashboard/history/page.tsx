@@ -1,6 +1,8 @@
 
 "use client";
 
+import { useAuth } from "@/context/auth-provider";
+import { AdminHistory } from "@/components/dashboard/admin/admin-history";
 import {
   Card,
   CardContent,
@@ -19,7 +21,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useBooking } from "@/context/booking-provider";
-import { useAuth } from "@/context/auth-provider";
 import { format } from "date-fns";
 import { Star } from "lucide-react";
 
@@ -27,25 +28,24 @@ export default function HistoryPage() {
   const { user, role } = useAuth();
   const { bookings: allBookings, drivers, users: allUsers } = useBooking();
 
+  if (role === 'admin') {
+    return <AdminHistory allBookings={allBookings} />;
+  }
+  
   const userBookings = allBookings.filter(b => {
-    if (role === 'admin') return true;
     if (role === 'client') return b.clientId === user?.userId;
     if (role === 'driver') {
         const driverDetails = drivers.find(d => d.userId === user?.userId);
         return b.driverId === driverDetails?.driverId;
     }
-     if (role === 'provider') return b.providerId === user?.userId; // Assuming providerId matches userId for providers
+     if (role === 'provider') return b.providerId === user?.userId;
     return false;
   })
 
   const completedBookings = userBookings.filter(
     (b) => b.status === "delivered" || b.status === "cancelled"
   );
-
-  const getClientName = (clientId: string) => allUsers.find(u => u.userId === clientId)?.name || 'N/A';
-  const getDriverName = (driverId: string) => drivers.find(d => d.driverId === driverId)?.name || 'N/A';
-
-
+  
   return (
     <div>
       <div className="mb-8">
@@ -66,8 +66,6 @@ export default function HistoryPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
-                 {role === 'admin' && <TableHead>Client</TableHead>}
-                 {role === 'admin' && <TableHead>Driver</TableHead>}
                 <TableHead>Vehicle</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Cost</TableHead>
@@ -78,8 +76,6 @@ export default function HistoryPage() {
               {completedBookings.map((booking) => (
                 <TableRow key={booking.bookingId}>
                   <TableCell>{format(booking.createdAt, "PPP")}</TableCell>
-                   {role === 'admin' && <TableCell>{getClientName(booking.clientId)}</TableCell>}
-                   {role === 'admin' && <TableCell>{getDriverName(booking.driverId)}</TableCell>}
                   <TableCell>
                     {booking.vehicle.make} {booking.vehicle.model}
                   </TableCell>
@@ -99,7 +95,7 @@ export default function HistoryPage() {
               ))}
                {completedBookings.length === 0 && (
                 <TableRow>
-                    <TableCell colSpan={role === 'admin' ? 7 : 5} className="text-center h-24">No completed bookings yet.</TableCell>
+                    <TableCell colSpan={5} className="text-center h-24">No completed bookings yet.</TableCell>
                 </TableRow>
                )}
             </TableBody>
