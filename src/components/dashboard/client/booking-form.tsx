@@ -33,27 +33,30 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Car, Send } from "lucide-react";
-import { MOCK_SERVICES, MOCK_VEHICLES } from "@/lib/mock-data";
+import { MOCK_VEHICLES } from "@/lib/mock-data";
 import { Label } from "@/components/ui/label";
+import { useBooking } from "@/context/booking-provider";
 
 const formSchema = z.object({
   bookingType: z.enum(["self-drive", "request-driver"], {
     required_error: "You need to select a booking type.",
   }),
   vehicleId: z.string().min(1, { message: "Please select a car." }),
-  serviceId: z.string().min(1, { message: "Please select a service." }),
+  providerId: z.string().min(1, { message: "Please select a car wash." }),
   pickupLocation: z
     .string()
     .min(5, { message: "Please enter a valid pickup address." }),
 });
 
 export function BookingForm() {
+  const { providers } = useBooking();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       bookingType: "request-driver",
       vehicleId: "", 
-      serviceId: "",
+      providerId: "",
       pickupLocation: "Lusaka, Zambia",
     },
   });
@@ -68,6 +71,8 @@ export function BookingForm() {
     });
     form.reset();
   }
+
+  const approvedProviders = providers.filter(p => p.approved);
 
   return (
     <Card>
@@ -160,23 +165,23 @@ export function BookingForm() {
             />
             <FormField
               control={form.control}
-              name="serviceId"
+              name="providerId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Service</FormLabel>
+                  <FormLabel>Car Wash Provider</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a wash service" />
+                        <SelectValue placeholder="Select a car wash" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {MOCK_SERVICES.map((service) => (
-                        <SelectItem key={service.id} value={service.id}>
-                          {service.name} - K{service.price.toFixed(2)}
+                      {approvedProviders.map((provider) => (
+                        <SelectItem key={provider.providerId} value={provider.providerId}>
+                          {provider.name} - ({provider.location})
                         </SelectItem>
                       ))}
                     </SelectContent>

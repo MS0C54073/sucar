@@ -36,6 +36,25 @@ const formSchema = z.object({
   role: z.enum(["client", "driver", "provider"], {
     required_error: "You must select a role.",
   }),
+  // Provider-specific fields
+  businessName: z.string().optional(),
+  location: z.string().optional(),
+}).refine(data => {
+    if (data.role === 'provider') {
+        return !!data.businessName && data.businessName.length > 2;
+    }
+    return true;
+}, {
+    message: "Business name is required for providers.",
+    path: ["businessName"],
+}).refine(data => {
+    if (data.role === 'provider') {
+        return !!data.location && data.location.length > 3;
+    }
+    return true;
+}, {
+    message: "Location is required for providers.",
+    path: ["location"],
 });
 
 export function SignUpForm() {
@@ -49,15 +68,21 @@ export function SignUpForm() {
       nickname: "",
       password: "",
       role: "client",
+      businessName: "",
+      location: "",
     },
   });
+
+  const selectedRole = form.watch("role");
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
       // Synthesize the email from the nickname for Firebase Auth
       const email = `${values.nickname.toLowerCase()}@sucar.app`;
-      await signup(values.nickname, email, values.password, values.role);
+      
+      // We pass all form values to the signup function now
+      await signup(values);
       
       if (values.role === "client") {
         toast({
@@ -125,6 +150,38 @@ export function SignUpForm() {
             </FormItem>
           )}
         />
+
+        {selectedRole === 'provider' && (
+            <>
+                <FormField
+                control={form.control}
+                name="businessName"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Business Name</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g. Sparkle Car Wash" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Location</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g. East Park Mall, Lusaka" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </>
+        )}
+
         <FormField
           control={form.control}
           name="password"

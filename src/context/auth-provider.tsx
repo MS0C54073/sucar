@@ -19,22 +19,26 @@ import {
 } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc }from "firebase/firestore";
 import { initializeFirebase } from "@/firebase";
-import type { User, UserRole } from "@/lib/types";
+import type { User, UserRole, Provider } from "@/lib/types";
 
 // Initialize Firebase
 const { auth, firestore } = initializeFirebase();
+
+// Define the shape of the values passed to the signup function
+interface SignUpValues {
+    nickname: string;
+    password: string;
+    role: UserRole;
+    businessName?: string;
+    location?: string;
+}
 
 interface AuthContextType {
   user: User | null;
   firebaseUser: FirebaseUser | null;
   role: UserRole | null;
   login: (email: string, password: string, name?: string) => Promise<void>;
-  signup: (
-    name: string,
-    email: string,
-    password: string,
-    role: UserRole
-  ) => Promise<void>;
+  signup: (values: SignUpValues) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -88,14 +92,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       // Special handling for temporary admin credentials
-      if (email === 'admin@sucar.com' && password === 'admin2025') {
+      const syntheticEmail = `${name?.toLowerCase()}@sucar.app`;
+      const loginEmail = name ? syntheticEmail : email;
+
+      if (loginEmail === 'admin@sucar.app' && password === 'admin2025') {
         try {
           // Try to sign in first, in case the user already exists
-          await signInWithEmailAndPassword(auth, email, password);
+          await signInWithEmailAndPassword(auth, loginEmail, password);
         } catch (error: any) {
           // If the user does not exist, create it
-          if (error.code === 'auth/user-not-found') {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+            const userCredential = await createUserWithEmailAndPassword(auth, loginEmail, password);
             const fbUser = userCredential.user;
             const adminProfile: Omit<User, "userId"> = {
                 name: "Admin",
@@ -112,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, loginEmail, password);
       }
       router.push("/dashboard");
     } finally {
@@ -120,13 +127,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (
-    name: string,
-    email: string,
-    password: string,
-    role: UserRole
-  ) => {
+  const signup = async (values: SignUpValues) => {
     setLoading(true);
+    const { nickname, password, role, businessName, location } = values;
+    const email = `${nickname.toLowerCase()}@sucar.app`;
+
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -135,8 +140,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
       const fbUser = userCredential.user;
 
+      // Create base user profile
       const userProfile: Omit<User, "userId" | "createdAt"> = {
-        name,
+        name: role === 'provider' ? businessName! : nickname,
         email,
         phone: "",
         role,
@@ -149,6 +155,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       setUser({ userId: fbUser.uid, ...userProfile, createdAt: new Date() });
+
+      // Create role-specific profiles
+      if (role === 'provider' && businessName && location) {
+         const providerProfile: Omit<Provider, 'providerId' | 'userId'> = {
+            name: businessName,
+            location: location,
+            baysCount: 0, // Default value
+            services: [], // Default value
+            approved: false, // Providers start as unapproved
+         };
+         await setDoc(doc(firestore, "providers", fbUser.uid), {
+            ...providerProfile,
+            userId: fbUser.uid,
+         });
+      }
+      // Add logic for 'client' and 'driver' profiles here later
 
       router.push("/dashboard");
 
