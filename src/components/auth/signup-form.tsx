@@ -29,8 +29,7 @@ import { Loader2 } from "lucide-react";
 import type { UserRole } from "@/lib/types";
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email({ message: "A valid email address is required." }),
+  nickname: z.string().min(3, { message: "Nickname must be at least 3 characters." }).refine(s => !s.includes('@'), "Nickname cannot contain an '@' symbol."),
   password: z
     .string()
     .min(6, { message: "Password must be at least 6 characters." }),
@@ -47,8 +46,7 @@ export function SignUpForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      email: "",
+      nickname: "",
       password: "",
       role: "client",
     },
@@ -57,7 +55,9 @@ export function SignUpForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await signup(values.name, values.email, values.password, values.role);
+      // Synthesize the email from the nickname for Firebase Auth
+      const email = `${values.nickname.toLowerCase()}@sucar.app`;
+      await signup(values.nickname, email, values.password, values.role);
       
       if (values.role === "client") {
         toast({
@@ -72,10 +72,14 @@ export function SignUpForm() {
       }
       // The auth provider will redirect to the dashboard automatically
     } catch (error: any) {
+      let description = "An unexpected error occurred.";
+      if (error.code === 'auth/email-already-in-use') {
+        description = "This nickname is already taken. Please choose another one.";
+      }
       toast({
         variant: "destructive",
         title: "Sign Up Failed",
-        description: error.message || "An unexpected error occurred.",
+        description: description,
       });
     } finally {
       setIsLoading(false);
@@ -110,25 +114,12 @@ export function SignUpForm() {
 
         <FormField
           control={form.control}
-          name="name"
+          name="nickname"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Full Name</FormLabel>
+              <FormLabel>Nickname</FormLabel>
               <FormControl>
-                <Input placeholder="John Doe" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input placeholder="name@example.com" {...field} />
+                <Input placeholder="e.g. zuluwarrior" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

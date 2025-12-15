@@ -21,7 +21,7 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  email: z.string().email({ message: "Invalid email address." }),
+  nickname: z.string().min(3, { message: "Nickname must be at least 3 characters." }),
   password: z
     .string()
     .min(6, { message: "Password must be at least 6 characters." }),
@@ -35,7 +35,7 @@ export function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      nickname: "",
       password: "",
     },
   });
@@ -43,12 +43,18 @@ export function LoginForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await login(values.email, values.password);
+      // Synthesize the email from the nickname for Firebase Auth
+      const email = `${values.nickname.toLowerCase()}@sucar.app`;
+      await login(email, values.password, values.nickname);
     } catch (error: any) {
+      let description = "An unexpected error occurred.";
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+        description = "Invalid nickname or password. Please try again."
+      }
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message || "An unexpected error occurred.",
+        description: description,
       });
     } finally {
       setIsLoading(false);
@@ -60,12 +66,12 @@ export function LoginForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="email"
+          name="nickname"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Nickname</FormLabel>
               <FormControl>
-                <Input placeholder="name@example.com" {...field} />
+                <Input placeholder="your-nickname" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -28,7 +28,7 @@ interface AuthContextType {
   user: User | null;
   firebaseUser: FirebaseUser | null;
   role: UserRole | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, name?: string) => Promise<void>;
   signup: (
     name: string,
     email: string,
@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, name?: string) => {
     setLoading(true);
     try {
       // Special handling for temporary admin credentials
@@ -95,7 +95,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (error: any) {
           // If the user does not exist, create it
           if (error.code === 'auth/user-not-found') {
-            await createUserWithEmailAndPassword(auth, email, password);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const fbUser = userCredential.user;
+            const adminProfile: Omit<User, "userId"> = {
+                name: "Admin",
+                email: "admin@sucar.com",
+                phone: "111-222-3333",
+                role: "admin",
+                avatarUrl: `https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA`,
+                createdAt: new Date(),
+             };
+             await setDoc(doc(firestore, "users", fbUser.uid), adminProfile);
+             setUser({ userId: fbUser.uid, ...adminProfile });
           } else {
             throw error; // Re-throw other errors
           }
