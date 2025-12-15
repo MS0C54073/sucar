@@ -28,91 +28,38 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import type { UserRole } from "@/lib/types";
 
-const formSchema = z.object({
-  nickname: z.string().min(3, { message: "Nickname must be at least 3 characters." }).refine(s => !s.includes('@'), "Nickname cannot contain an '@' symbol."),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters." }),
-  role: z.enum(["client", "driver", "provider"], {
-    required_error: "You must select a role.",
-  }),
-  // Provider-specific fields
-  businessName: z.string().optional(),
-  location: z.string().optional(),
-}).refine(data => {
-    if (data.role === 'provider') {
-        return !!data.businessName && data.businessName.length > 2;
-    }
-    return true;
-}, {
-    message: "Business name is required for providers.",
-    path: ["businessName"],
-}).refine(data => {
-    if (data.role === 'provider') {
-        return !!data.location && data.location.length > 3;
-    }
-    return true;
-}, {
-    message: "Location is required for providers.",
-    path: ["location"],
-});
-
-export function SignUpForm() {
-  const { signup } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      nickname: "",
-      password: "",
-      role: "client",
-      businessName: "",
-      location: "",
-    },
-  });
-
-  const selectedRole = form.watch("role");
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
-    try {
-      // Synthesize the email from the nickname for Firebase Auth
-      const email = `${values.nickname.toLowerCase()}@sucar.app`;
-      
-      // We pass all form values to the signup function now
-      await signup(values);
-      
-      if (values.role === "client") {
-        toast({
-            title: "Account Created!",
-            description: "You have been successfully signed up. Redirecting...",
-        });
-      } else {
-        toast({
-            title: "Registration Submitted",
-            description: "Your account is pending approval from an administrator.",
-        });
-      }
-      // The auth provider will redirect to the dashboard automatically
-    } catch (error: any) {
-      let description = "An unexpected error occurred.";
-      if (error.code === 'auth/email-already-in-use') {
-        description = "This nickname is already taken. Please choose another one.";
-      }
-      toast({
-        variant: "destructive",
-        title: "Sign Up Failed",
-        description: description,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  return (
-    <Form {...form}>
+const lusakaLocations = [
+    "Acacia Park",
+    "Arcades Shopping Mall",
+    "Avondale",
+    "Bauleni",
+    "Brentwood",
+    "Buckley",
+    "Caledonia",
+    "Castle",
+    "Cathedral Hill",
+    "Chaisa",
+    "Chakunkula",
+    "Chainama",
+    "Chamba Valley",
+    "Chandamali",
+    "Chelston",
+    "Chibolya",
+    "Chilenje",
+    "Chipata",
+    "Chiwala",
+    "Chudleigh",
+    "Civic Centre",
+    "East Park Mall",
+    "Emmasdale",
+    "Fairview",
+    "Garden",
+    "George",
+    "Handsworth",
+    "Helen Kaunda",
+    "Ibex Hill",
+    "Industrial Area",
+_QUOTED_CONTENT_
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
@@ -167,18 +114,27 @@ export function SignUpForm() {
                 )}
                 />
                 <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Location</FormLabel>
-                    <FormControl>
-                        <Input placeholder="e.g. East Park Mall, Lusaka" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Location</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select your business location" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {lusakaLocations.map(loc => (
+                                    <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
             </>
         )}
 
