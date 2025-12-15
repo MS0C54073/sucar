@@ -19,16 +19,21 @@ const WhatsAppIcon = () => (
 
 export function Footer() {
   return (
-    <footer className="w-full bg-card border-t">
+    <footer id="contact" className="w-full bg-card border-t">
       <div className="container mx-auto px-4 py-8 md:px-6">
         <div className="grid gap-8 lg:grid-cols-3">
             <div className="flex flex-col gap-4">
                 <Logo />
                 <p className="text-muted-foreground max-w-xs">The future of car care in Lusaka. Convenient, reliable, and always on time.</p>
-                 <div className="flex items-start gap-2 text-muted-foreground">
+                 <a 
+                    href="https://www.google.com/maps/search/?api=1&query=Lusaka+Town%2C+Lusaka+Province%2C+Zambia" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex items-start gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                >
                     <MapPin className="h-5 w-5 mt-1 shrink-0" />
                     <span>Lusaka Town, Lusaka Province, Zambia</span>
-                </div>
+                </a>
             </div>
             <div className="grid gap-4">
                 <h4 className="font-semibold text-lg">Quick Links</h4>
@@ -39,7 +44,7 @@ export function Footer() {
                     <Link href="#about" className="text-muted-foreground hover:text-foreground" prefetch={false}>
                         About Us
                     </Link>
-                     <Link href="#" className="text-muted-foreground hover:text-foreground" prefetch={false}>
+                     <Link href="#contact" className="text-muted-foreground hover:text-foreground" prefetch={false}>
                         Contact
                     </Link>
                     <Link href="/login" className="text-muted-foreground hover:text-foreground" prefetch={false}>

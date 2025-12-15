@@ -25,7 +25,7 @@ export function Header() {
               About Us
             </Link>
             <Link
-              href="#"
+              href="#contact"
               className="transition-colors hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md"
             >
               Contact
