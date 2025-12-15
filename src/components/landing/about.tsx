@@ -1,5 +1,17 @@
+
+'use client';
+
+import React from 'react';
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 const testimonials = [
   {
@@ -14,9 +26,25 @@ const testimonials = [
     role: "Regular User",
     avatar: "https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA",
   },
+  {
+    quote: "As a car wash provider, SuCAR has streamlined my bookings and brought in more customers. The driver system is brilliant!",
+    name: "Memory Mwansa",
+    role: "Partner Provider",
+    avatar: "https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA",
+  },
+  {
+    quote: "I love the convenience. My car gets washed while I'm at work. It's a total game-changer for me.",
+    name: "Lethabo Zulu",
+    role: "Happy Client",
+    avatar: "https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA",
+  },
 ];
 
 export function AboutUs() {
+  const plugin = React.useRef(
+    Autoplay({ delay: 4000, stopOnInteraction: true })
+  );
+
   return (
     <section id="about" className="w-full py-20 md:py-32 bg-background">
       <div className="container mx-auto px-4 md:px-6">
@@ -48,23 +76,39 @@ export function AboutUs() {
 
         <div className="mt-24">
             <h3 className="text-2xl font-bold text-center mb-12">What Our Customers Say</h3>
-            <div className="grid md:grid-cols-2 gap-8">
+            <Carousel
+              plugins={[plugin.current]}
+              className="w-full max-w-4xl mx-auto"
+              opts={{
+                loop: true,
+              }}
+              onMouseEnter={plugin.current.stop}
+              onMouseLeave={plugin.current.reset}
+            >
+              <CarouselContent>
                 {testimonials.map((testimonial, index) => (
-                    <div key={index} className="bg-card p-6 rounded-lg shadow-sm">
-                        <p className="text-muted-foreground italic mb-4">"{testimonial.quote}"</p>
-                        <div className="flex items-center gap-4">
-                            <Avatar>
-                                <AvatarImage src={testimonial.avatar} />
-                                <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className="font-semibold">{testimonial.name}</p>
-                                <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                            </div>
-                        </div>
+                  <CarouselItem key={index} className="md:basis-1/2">
+                    <div className="p-1 h-full">
+                      <div className="bg-card p-6 rounded-lg shadow-sm h-full flex flex-col justify-between">
+                          <p className="text-muted-foreground italic mb-4">"{testimonial.quote}"</p>
+                          <div className="flex items-center gap-4 mt-auto">
+                              <Avatar>
+                                  <AvatarImage src={testimonial.avatar} alt={testimonial.name}/>
+                                  <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                  <p className="font-semibold">{testimonial.name}</p>
+                                  <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                              </div>
+                          </div>
+                      </div>
                     </div>
+                  </CarouselItem>
                 ))}
-            </div>
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
         </div>
       </div>
     </section>
