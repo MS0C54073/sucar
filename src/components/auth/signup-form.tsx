@@ -4,7 +4,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState } from "react";
+import { useState }from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -59,7 +59,117 @@ const lusakaLocations = [
     "Helen Kaunda",
     "Ibex Hill",
     "Industrial Area",
-_QUOTED_CONTENT_
+    "Kabulonga",
+    "Kabwata",
+    "Kalingalinga",
+    "Kalundu",
+    "Kamanga",
+    "Kamwala",
+    "Kanyama",
+    "Kaunda Square",
+    "Leopards Hill",
+    "Lilayi",
+    "Longacres",
+    "Luburma",
+    "Lunda",
+    "Makeni",
+    "Mandevu",
+    "Matero",
+    "Mbabala",
+    "Meanwood",
+    "Misisi",
+    "Mtendere",
+    "Mumbwa",
+    "Munali",
+    "Mutendere",
+    "New Avondale",
+    "New Kasama",
+    "Ng'ombe",
+    "Northmead",
+    "Nyumba Yanga",
+    "Olympia",
+    "PHI",
+    "President's Lane",
+    "Prospect Hill",
+    "Rhodes Park",
+    "Roma",
+    "Salama Park",
+    "Sikanze",
+    "Silverest",
+    "State Lodge",
+    "Teagle",
+    "Thornpark",
+    "Twin Palm",
+    "Villa Elizabetha",
+    "Woodlands",
+    "ZAF",
+    "Zanimuone"
+];
+
+
+const baseSchema = z.object({
+  nickname: z.string().min(3, { message: "Nickname must be at least 3 characters." }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters." }),
+  role: z.enum(["client", "driver", "provider"], {
+    required_error: "You must select a role.",
+  }),
+});
+
+const providerSchema = baseSchema.extend({
+    businessName: z.string().min(3, { message: "Business name is required." }),
+    location: z.string().min(1, { message: "Location is required." }),
+});
+
+export function SignUpForm() {
+  const { signup } = useAuth();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<UserRole | ''>('');
+  
+  const formSchema = selectedRole === 'provider' ? providerSchema : baseSchema;
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      nickname: "",
+      password: "",
+      role: "client",
+    },
+  });
+
+  const roleValue = form.watch('role');
+
+  useState(() => {
+    setSelectedRole(roleValue);
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+    try {
+      await signup(values);
+      toast({
+        title: "Account Created!",
+        description: "You have been successfully signed up.",
+      });
+    } catch (error: any) {
+        let description = "An unexpected error occurred.";
+        if (error.code === 'auth/email-already-in-use') {
+            description = "This nickname is already taken. Please choose another one."
+        }
+      toast({
+        variant: "destructive",
+        title: "Sign Up Failed",
+        description: description,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  return (
+    <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
@@ -67,7 +177,10 @@ _QUOTED_CONTENT_
           render={({ field }) => (
             <FormItem>
               <FormLabel>I am a...</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={(value) => {
+                  field.onChange(value);
+                  setSelectedRole(value as UserRole);
+              }} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select your role" />

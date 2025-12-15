@@ -63,10 +63,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           // Handle case where user exists in Auth but not Firestore
           // For the temp admin, we create the profile if it doesn't exist.
-          if (fbUser.email === 'admin@sucar.com') {
+          if (fbUser.email === 'admin@sucar.app') {
              const adminProfile: Omit<User, "userId"> = {
                 name: "Admin",
-                email: "admin@sucar.com",
+                email: "admin@sucar.app",
                 phone: "111-222-3333",
                 role: "admin",
                 avatarUrl: `https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA`,
@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const fbUser = userCredential.user;
             const adminProfile: Omit<User, "userId"> = {
                 name: "Admin",
-                email: "admin@sucar.com",
+                email: "admin@sucar.app",
                 phone: "111-222-3333",
                 role: "admin",
                 avatarUrl: `https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA`,
@@ -141,20 +141,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const fbUser = userCredential.user;
 
       // Create base user profile
-      const userProfile: Omit<User, "userId" | "createdAt"> = {
+      const userProfile: Omit<User, "userId"> = {
         name: role === 'provider' ? businessName! : nickname,
         email,
         phone: "",
         role,
         avatarUrl: `https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA`,
+        createdAt: new Date(),
       };
 
-      await setDoc(doc(firestore, "users", fbUser.uid), {
-        ...userProfile,
-        createdAt: new Date(),
-      });
+      await setDoc(doc(firestore, "users", fbUser.uid), userProfile);
       
-      setUser({ userId: fbUser.uid, ...userProfile, createdAt: new Date() });
+      setUser({ userId: fbUser.uid, ...userProfile });
 
       // Create role-specific profiles
       if (role === 'provider' && businessName && location) {
