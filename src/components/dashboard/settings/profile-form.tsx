@@ -28,27 +28,27 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email({ message: "Invalid email address." }),
+  email: z.string().email({ message: "Invalid email address." }).optional(),
   phone: z.string().optional(),
+  nrc: z.string().optional(),
+  licenseNo: z.string().optional(),
 });
 
 export function ProfileForm() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    // Set defaultValues only when the user object is available.
-    // The || '' ensures the values are never null/undefined, preventing uncontrolled/controlled errors.
     defaultValues: {
       name: user?.name || "",
       email: user?.email || "",
       phone: user?.phone || "",
     },
-    // The values will be updated once the user object is loaded.
     values: user ? {
         name: user.name,
         email: user.email,
-        phone: user.phone || ''
+        phone: user.phone || '',
+        // Add other fields based on role later
     } : undefined
   });
 
@@ -61,11 +61,9 @@ export function ProfileForm() {
     });
   }
 
-  // If the user data is not yet loaded, show a skeleton loader
-  // This prevents trying to access properties of a null `user` object
   if (!user) {
     return (
-        <Card className="max-w-2xl">
+        <Card className="max-w-2xl mt-4">
             <CardHeader>
                 <Skeleton className="h-8 w-48" />
                 <Skeleton className="h-4 w-64" />
@@ -92,7 +90,7 @@ export function ProfileForm() {
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card className="mt-4">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardHeader>
@@ -115,20 +113,7 @@ export function ProfileForm() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Address</FormLabel>
-                  <FormControl>
-                    <Input type="email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
+             <FormField
               control={form.control}
               name="phone"
               render={({ field }) => (
@@ -136,6 +121,49 @@ export function ProfileForm() {
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
                     <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {role === 'client' && (
+               <FormField
+                control={form.control}
+                name="nrc"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>NRC Number</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g. 123456/10/1" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            )}
+             {role === 'driver' && (
+               <FormField
+                control={form.control}
+                name="licenseNo"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Driver's License No.</FormLabel>
+                    <FormControl>
+                        <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            )}
+             <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email Address</FormLabel>
+                  <FormControl>
+                    <Input type="email" readOnly disabled {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
