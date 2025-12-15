@@ -54,7 +54,7 @@ export function BookingForm() {
       bookingType: "request-driver",
       vehicleId: "", 
       serviceId: "",
-      pickupLocation: "",
+      pickupLocation: "Lusaka, Zambia",
     },
   });
 
