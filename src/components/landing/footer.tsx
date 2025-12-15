@@ -1,7 +1,7 @@
 
 import Link from "next/link";
 import { Logo } from "@/components/logo";
-import { Facebook, Mail, Phone, Linkedin } from "lucide-react";
+import { Facebook, Mail, Phone, Linkedin, MapPin } from "lucide-react";
 
 // Inline SVG for WhatsApp as it's not in lucide-react
 const WhatsAppIcon = () => (
@@ -25,6 +25,10 @@ export function Footer() {
             <div className="flex flex-col gap-4">
                 <Logo />
                 <p className="text-muted-foreground max-w-xs">The future of car care in Lusaka. Convenient, reliable, and always on time.</p>
+                 <div className="flex items-start gap-2 text-muted-foreground">
+                    <MapPin className="h-5 w-5 mt-1 shrink-0" />
+                    <span>Lusaka Town, Lusaka Province, Zambia</span>
+                </div>
             </div>
             <div className="grid gap-4">
                 <h4 className="font-semibold text-lg">Quick Links</h4>
@@ -43,7 +47,7 @@ export function Footer() {
                     </Link>
                 </nav>
             </div>
-             <div className="grid gap-4">
+             <div className="grid gap-2">
                 <h4 className="font-semibold text-lg">Connect With Us</h4>
                 <div className="flex items-center gap-4">
                     <Link href="#" aria-label="Facebook" className="text-blue-600 hover:text-blue-700 transition-colors">
