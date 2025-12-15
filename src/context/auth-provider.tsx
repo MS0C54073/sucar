@@ -17,7 +17,7 @@ import {
   signOut,
   type User as FirebaseUser,
 } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc }from "firebase/firestore";
 import { initializeFirebase } from "@/firebase";
 import type { User, UserRole } from "@/lib/types";
 
@@ -57,10 +57,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (userDocSnap.exists()) {
           setUser({ userId: fbUser.uid, ...userDocSnap.data() } as User);
         } else {
-          // This case might happen if the Firestore doc wasn't created
-          // Or if you want to handle profile creation post-social login etc.
-          console.log("No user profile found in Firestore for UID:", fbUser.uid);
-          setUser(null);
+          // Handle case where user exists in Auth but not Firestore
+          // For the temp admin, we create the profile if it doesn't exist.
+          if (fbUser.email === 'admin@sucar.com') {
+             const adminProfile: Omit<User, "userId"> = {
+                name: "Admin",
+                email: "admin@sucar.com",
+                phone: "111-222-3333",
+                role: "admin",
+                avatarUrl: `https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA`,
+                createdAt: new Date(),
+             };
+             await setDoc(doc(firestore, "users", fbUser.uid), adminProfile);
+             setUser({ userId: fbUser.uid, ...adminProfile });
+          } else {
+             console.log("No user profile found in Firestore for UID:", fbUser.uid);
+             setUser(null);
+          }
         }
       } else {
         setUser(null);
@@ -74,8 +87,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged will handle setting user and redirecting
+      // Special handling for temporary admin credentials
+      if (email === 'admin@sucar.com' && password === 'admin2025') {
+        try {
+          // Try to sign in first, in case the user already exists
+          await signInWithEmailAndPassword(auth, email, password);
+        } catch (error: any) {
+          // If the user does not exist, create it
+          if (error.code === 'auth/user-not-found') {
+            await createUserWithEmailAndPassword(auth, email, password);
+          } else {
+            throw error; // Re-throw other errors
+          }
+        }
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
       router.push("/dashboard");
     } finally {
       setLoading(false);
@@ -97,11 +124,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
       const fbUser = userCredential.user;
 
-      // Create user profile in Firestore
       const userProfile: Omit<User, "userId" | "createdAt"> = {
         name,
         email,
-        phone: "", // Add phone if you collect it, otherwise leave empty
+        phone: "",
         role,
         avatarUrl: `https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA`,
       };
@@ -113,7 +139,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       setUser({ userId: fbUser.uid, ...userProfile, createdAt: new Date() });
 
-      // onAuthStateChanged will handle the rest
       router.push("/dashboard");
 
     } finally {
