@@ -15,6 +15,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-provider";
 import { Loader2 } from "lucide-react";
@@ -25,6 +32,9 @@ const formSchema = z.object({
   password: z
     .string()
     .min(6, { message: "Password must be at least 6 characters." }),
+  role: z.enum(["client", "driver", "provider", "admin"], {
+    required_error: "You must select a role.",
+  }),
 });
 
 export function LoginForm() {
@@ -37,6 +47,7 @@ export function LoginForm() {
     defaultValues: {
       nickname: "",
       password: "",
+      role: "client",
     },
   });
 
@@ -64,6 +75,29 @@ export function LoginForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="role"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Login as</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="client">Client</SelectItem>
+                  <SelectItem value="driver">Driver</SelectItem>
+                  <SelectItem value="provider">Service Provider</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="nickname"
