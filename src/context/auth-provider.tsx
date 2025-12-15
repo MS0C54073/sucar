@@ -103,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         phone: "", // Add phone if you collect it, otherwise leave empty
         role,
-        avatarUrl: `https://picsum.photos/seed/${fbUser.uid}/100/100`,
+        avatarUrl: `https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA`,
       };
 
       await setDoc(doc(firestore, "users", fbUser.uid), {

@@ -4,15 +4,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const testimonials = [
   {
     quote: "SuCAR has completely changed how I manage my car care. The pickup service is a lifesaver for my busy schedule!",
-    name: "Jane Doe",
+    name: "Thandiwe Banda",
     role: "Satisfied Client",
-    avatar: "https://picsum.photos/seed/avatar1/100/100",
+    avatar: "https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA",
   },
   {
     quote: "The real-time tracking is fantastic. I always know exactly where my car is and when to expect it back. Highly recommended!",
-    name: "John Smith",
+    name: "Chomba Mumba",
     role: "Regular User",
-    avatar: "https://picsum.photos/seed/avatar2/100/100",
+    avatar: "https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA",
   },
 ];
 
@@ -37,7 +37,7 @@ export function AboutUs() {
           </div>
           <div className="relative h-80 lg:h-96 rounded-lg overflow-hidden shadow-2xl">
             <Image
-              src="https://picsum.photos/seed/team/800/600"
+              src="https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA"
               alt="The SuCAR Team"
               fill
               className="object-cover"

@@ -9,70 +9,70 @@ export const MOCK_USERS: User[] = [
     email: 'admin@sucar.com',
     phone: '111-222-3333',
     role: 'admin',
-    avatarUrl: 'https://picsum.photos/seed/admin-01/100/100',
+    avatarUrl: 'https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA',
     createdAt: new Date('2023-01-01'),
   },
   {
     userId: 'client-01',
-    name: 'Alice Johnson',
+    name: 'Thandiwe Banda',
     email: 'client@sucar.com',
     phone: '444-555-6666',
     role: 'client',
-    avatarUrl: 'https://picsum.photos/seed/client-01/100/100',
+    avatarUrl: 'https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA',
     createdAt: new Date('2023-02-15'),
   },
   {
     userId: 'driver-01',
-    name: 'Bob Williams',
+    name: 'Bwalya Chanda',
     email: 'driver@sucar.com',
     phone: '777-888-9999',
     role: 'driver',
-    avatarUrl: 'https://picsum.photos/seed/driver-01/100/100',
+    avatarUrl: 'https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA',
     createdAt: new Date('2023-03-10'),
   },
   {
     userId: 'provider-01',
-    name: 'SparkleClean Wash',
+    name: 'Kaleza Car Wash',
     email: 'provider@sucar.com',
     phone: '123-456-7890',
     role: 'provider',
-    avatarUrl: 'https://picsum.photos/seed/provider-01/100/100',
+    avatarUrl: 'https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA',
     createdAt: new Date('2023-04-01'),
   },
   {
     userId: 'client-02',
-    name: 'Charlie Brown',
+    name: 'Chomba Mumba',
     email: 'charlie@example.com',
     phone: '555-123-4567',
     role: 'client',
-    avatarUrl: 'https://picsum.photos/seed/client-02/100/100',
+    avatarUrl: 'https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA',
     createdAt: new Date('2023-05-20'),
   },
   {
     userId: 'driver-02', // Added for Samantha
-    name: 'Samantha Jones',
+    name: 'Mutale Phiri',
     email: 'samantha@sucar.com',
     phone: '222-333-4444',
     role: 'driver',
-    avatarUrl: 'https://picsum.photos/seed/driver-02/100/100',
+    avatarUrl: 'https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA',
     createdAt: new Date('2023-06-01'),
   },
   {
     userId: 'driver-03', // Added for third driver
-    name: 'Peter Pan',
+    name: 'Lethabo Zulu',
     email: 'peter@sucar.com',
     phone: '333-444-5555',
     role: 'driver',
-    avatarUrl: 'https://picsum.photos/seed/driver-03/100/100',
+    avatarUrl: 'https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA',
     createdAt: new Date('2023-07-01'),
   },
   {
     userId: 'driver-04', // Added for fourth driver
-    name: 'Wendy Darling',
+    name: 'Nambaya Mwansa',
     email: 'wendy@sucar.com',
     phone: '444-555-6666',
     role: 'driver',
-    avatarUrl: 'https://picsum.photos/seed/driver-04/100/100',
+    avatarUrl: 'https://drive.google.com/uc?export=view&id=1qjEvNJV9aSSL7uZp4pZXq5UTw3f7CLbA',
     createdAt: new Date('2023-08-01'),
   },
 ];
@@ -103,7 +103,7 @@ export const MOCK_DRIVERS: Driver[] = [
   {
     driverId: 'driver-01-data',
     userId: 'driver-01',
-    name: "Bob Williams",
+    name: "Bwalya Chanda",
     phone: '777-888-9999',
     licenseNo: 'DL123456',
     address: '123 Main St, Anytown',
@@ -119,7 +119,7 @@ export const MOCK_DRIVERS: Driver[] = [
   {
     driverId: 'driver-02-data',
     userId: 'driver-02',
-    name: "Samantha Jones",
+    name: "Mutale Phiri",
     phone: '222-333-4444',
     licenseNo: 'DL654321',
     address: '456 Oak Ave, Otherville',
@@ -131,7 +131,7 @@ export const MOCK_DRIVERS: Driver[] = [
   {
     driverId: 'driver-03-data',
     userId: 'driver-03',
-    name: "Peter Pan",
+    name: "Lethabo Zulu",
     phone: '333-444-5555',
     licenseNo: 'DL789012',
     address: '789 Pine St, Neverland',
@@ -143,7 +143,7 @@ export const MOCK_DRIVERS: Driver[] = [
   {
     driverId: 'driver-04-data',
     userId: 'driver-04',
-    name: 'Wendy Darling',
+    name: 'Nambaya Mwansa',
     phone: '444-555-6666',
     licenseNo: 'DL345678',
     address: '101 Star Ave, London',
@@ -168,7 +168,7 @@ export const MOCK_PROVIDERS: Provider[] = [
   {
     providerId: 'provider-01-data',
     userId: 'provider-01',
-    name: 'SparkleClean Wash',
+    name: 'Kaleza Car Wash',
     location: '789 Market St',
     baysCount: 4,
     services: MOCK_SERVICES,
@@ -180,8 +180,8 @@ export const MOCK_PROVIDERS: Provider[] = [
 export const MOCK_BOOKINGS: Booking[] = [
   {
     bookingId: 'booking-01',
-    clientId: 'client-01', // Alice Johnson
-    driverId: 'driver-01-data', // Bob Williams
+    clientId: 'client-01', // Thandiwe Banda
+    driverId: 'driver-01-data', // Bwalya Chanda
     providerId: 'provider-01',
     pickupLocation: 'Acacia Park, Lusaka',
     vehicle: MOCK_VEHICLES[0],
@@ -191,8 +191,8 @@ export const MOCK_BOOKINGS: Booking[] = [
   },
   {
     bookingId: 'booking-02',
-    clientId: 'client-02', // Charlie Brown
-    driverId: 'driver-02-data', // Samantha Jones
+    clientId: 'client-02', // Chomba Mumba
+    driverId: 'driver-02-data', // Mutale Phiri
     providerId: 'provider-01',
     pickupLocation: 'Manda Hill, Lusaka',
     vehicle: MOCK_VEHICLES[2],
@@ -202,8 +202,8 @@ export const MOCK_BOOKINGS: Booking[] = [
   },
   {
     bookingId: 'booking-03',
-    clientId: 'client-01', // Alice Johnson
-    driverId: 'driver-03-data', // Peter Pan
+    clientId: 'client-01', // Thandiwe Banda
+    driverId: 'driver-03-data', // Lethabo Zulu
     providerId: 'provider-01',
     pickupLocation: 'East Park Mall, Lusaka',
     vehicle: MOCK_VEHICLES[1],
@@ -213,8 +213,8 @@ export const MOCK_BOOKINGS: Booking[] = [
   },
   {
     bookingId: 'booking-04',
-    clientId: 'client-02', // Charlie Brown
-    driverId: 'driver-01-data', // Bob Williams
+    clientId: 'client-02', // Chomba Mumba
+    driverId: 'driver-01-data', // Bwalya Chanda
     providerId: 'provider-01',
     pickupLocation: 'Levy Junction, Lusaka',
     vehicle: MOCK_VEHICLES[3],
@@ -224,8 +224,8 @@ export const MOCK_BOOKINGS: Booking[] = [
   },
     {
     bookingId: 'booking-05',
-    clientId: 'client-01', // Alice Johnson
-    driverId: 'driver-02-data', // Samantha Jones
+    clientId: 'client-01', // Thandiwe Banda
+    driverId: 'driver-02-data', // Mutale Phiri
     providerId: 'provider-01',
     pickupLocation: 'Arcades, Lusaka',
     vehicle: MOCK_VEHICLES[0],
