@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Facebook, Mail } from "lucide-react";
@@ -50,13 +51,13 @@ export function Footer() {
              <div className="grid gap-4">
                 <h4 className="font-semibold text-lg">Connect With Us</h4>
                 <div className="flex items-center gap-4">
-                    <Link href="#" aria-label="Facebook" className="text-muted-foreground hover:text-primary">
+                    <Link href="#" aria-label="Facebook" className="text-blue-600 hover:text-blue-700 transition-colors">
                         <Facebook className="h-6 w-6" />
                     </Link>
-                    <Link href="#" aria-label="WhatsApp" className="text-muted-foreground hover:text-primary">
+                    <Link href="#" aria-label="WhatsApp" className="text-green-500 hover:text-green-600 transition-colors">
                         <WhatsAppIcon />
                     </Link>
-                    <Link href="#" aria-label="Email" className="text-muted-foreground hover:text-primary">
+                    <Link href="#" aria-label="Email" className="text-red-600 hover:text-red-700 transition-colors">
                         <Mail className="h-6 w-6" />
                     </Link>
                 </div>

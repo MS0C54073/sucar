@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
@@ -10,22 +11,22 @@ export function Header() {
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Logo />
           </Link>
-          <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
+          <nav className="hidden items-center gap-1 text-sm font-medium md:flex">
             <Link
               href="#features"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
+              className="transition-colors hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md"
             >
               Features
             </Link>
             <Link
               href="#about"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
+              className="transition-colors hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md"
             >
               About Us
             </Link>
             <Link
               href="#"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
+              className="transition-colors hover:bg-accent hover:text-accent-foreground px-3 py-2 rounded-md"
             >
               Contact
             </Link>
