@@ -18,7 +18,7 @@ export function Header() {
               Features
             </Link>
             <Link
-              href="#"
+              href="#about"
               className="transition-colors hover:text-foreground/80 text-foreground/60"
             >
               About Us
