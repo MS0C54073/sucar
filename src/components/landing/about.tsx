@@ -23,16 +23,16 @@ export function AboutUs() {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-6">
             <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">
-              About SuCAR
+              What We Do
             </div>
             <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-5xl">
-              Driven by a Passion for Pristine Cars
+              Convenience, Trust, and a Sparkling Clean Car.
             </h2>
             <p className="text-muted-foreground md:text-lg">
-              SuCAR was founded with a simple mission: to make car care convenient, transparent, and trustworthy for everyone in Lusaka. We saw the hassle of traditional car washes—the long waits, the uncertain quality, and the time taken out of a busy day. We knew there had to be a better way.
+             We help car owners find the best car washes easily within their area. We lift the burden of having to waste time driving your car to the car wash by helping clients find the best, most reliable, and trusted drivers on the platform to handle that for them.
             </p>
             <p className="text-muted-foreground md:text-lg">
-              By connecting car owners with a network of reliable drivers and top-rated car wash providers, we've created a seamless ecosystem powered by technology. Our platform isn't just about cleaning cars; it's about giving you back your time and peace of mind.
+             Our mission is to ensure your car gets back to you in the best condition, without the hassle. By connecting car owners with a network of vetted drivers and top-rated car wash providers, we've created a seamless ecosystem powered by technology, giving you back your time and peace of mind.
             </p>
           </div>
           <div className="relative h-80 lg:h-96 rounded-lg overflow-hidden shadow-2xl">
