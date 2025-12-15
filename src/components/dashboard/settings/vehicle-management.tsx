@@ -31,11 +31,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { MOCK_VEHICLES } from "@/lib/mock-data"; // We'll replace this with real state
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select";
+import { MOCK_VEHICLES } from "@/lib/mock-data"; 
 import { PlusCircle, Trash2 } from "lucide-react";
 import { useAuth } from "@/context/auth-provider";
 import { toast } from "@/hooks/use-toast";
 import type { Car } from "@/lib/types";
+import { VEHICLE_MAKES, VEHICLE_COLORS } from "@/lib/vehicle-data";
 
 const vehicleSchema = z.object({
   make: z.string().min(2, "Make is required."),
@@ -146,9 +154,18 @@ export function VehicleManagement() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Make</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g. Toyota" {...field} />
-                      </FormControl>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a make" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {VEHICLE_MAKES.map((make) => (
+                                    <SelectItem key={make} value={make}>{make}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -185,9 +202,18 @@ export function VehicleManagement() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Color</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g. White" {...field} />
-                      </FormControl>
+                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a color" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {VEHICLE_COLORS.map((color) => (
+                                    <SelectItem key={color} value={color}>{color}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                       <FormMessage />
                     </FormItem>
                   )}
